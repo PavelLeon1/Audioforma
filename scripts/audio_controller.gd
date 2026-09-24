@@ -7,6 +7,7 @@ signal source_changed
 const SpectrumMapper = preload("res://scripts/spectrum_mapper.gd")
 const DEMO_STREAM = preload("res://assets/audio/demo.wav")
 const BUS_NAME := "Audio Analysis"
+const INVALID_AUDIO_MESSAGE := "Не удалось прочитать аудиофайл. Проверьте его формат."
 
 @onready var player: AudioStreamPlayer = $"../AudioPlayer"
 
@@ -32,9 +33,17 @@ func load_file(path: String) -> bool:
 	if extension not in ["mp3", "wav", "ogg"]:
 		last_error = "Поддерживаются файлы MP3, WAV и OGG Vorbis."
 		return false
-	if not FileAccess.file_exists(path):
+	var source_file := FileAccess.open(path, FileAccess.READ)
+	if source_file == null:
 		last_error = "Файл не найден или недоступен для чтения."
 		return false
+	if extension == "wav":
+		var header: PackedByteArray = source_file.get_buffer(12)
+		if header.size() < 12 or header.slice(0, 4).get_string_from_ascii() != "RIFF" or header.slice(8, 12).get_string_from_ascii() != "WAVE":
+			source_file.close()
+			last_error = INVALID_AUDIO_MESSAGE
+			return false
+	source_file.close()
 
 	var new_stream: AudioStream = null
 	match extension:
@@ -45,8 +54,8 @@ func load_file(path: String) -> bool:
 		"ogg":
 			new_stream = AudioStreamOggVorbis.load_from_file(path)
 
-	if new_stream == null:
-		last_error = "Не удалось прочитать аудиофайл. Проверьте его формат."
+	if new_stream == null or new_stream.get_length() <= 0.0:
+		last_error = INVALID_AUDIO_MESSAGE
 		return false
 
 	_set_stream(new_stream, path.get_file().get_basename(), extension.to_upper(), true)
@@ -61,8 +70,10 @@ func load_demo() -> void:
 func toggle_playback() -> void:
 	if player.stream == null:
 		return
-	if player.playing:
-		player.stream_paused = not player.stream_paused
+	if player.stream_paused:
+		player.stream_paused = false
+	elif player.playing:
+		player.stream_paused = true
 	else:
 		player.play()
 	playback_changed.emit()

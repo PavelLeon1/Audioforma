@@ -1,17 +1,29 @@
 extends Node3D
 
+const DEFAULT_CAMERA_DISTANCE := 7.0
+const MIN_CAMERA_DISTANCE := 5.6
+const MAX_CAMERA_DISTANCE := 9.0
+const CAMERA_STEP := 0.5
+const MAX_PITCH := 1.15
+
 @onready var orb: MeshInstance3D = $Orb
+@onready var camera: Camera3D = $Camera3D
 @onready var audio_controller: AudioController = $AudioController
 @onready var orb_material: ShaderMaterial = orb.get_surface_override_material(0) as ShaderMaterial
 
 var play_button: Button
 var playback_label: Label
+var status_panel: PanelContainer
 var source_name_label: Label
 var source_description_label: Label
+var zoom_label: Label
+var camera_reset_button: Button
 var file_dialog: FileDialog
 var spectrum_bars: Array[ProgressBar] = []
 var mode_buttons: Array[Button] = []
 var dragging := false
+var orbit_yaw := 0.0
+var orbit_pitch := 0.0
 var motion_time := 0.0
 var deformation_mode := 0
 
@@ -27,7 +39,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not dragging:
-		orb.rotate_y(delta * 0.12)
+		orbit_yaw += delta * 0.12
+		_update_orbit()
 	var bands := audio_controller.get_spectrum_analysis(delta)
 	var level := audio_controller.get_audio_level(delta)
 	motion_time += delta
@@ -53,21 +66,53 @@ func _set_mode(index: int) -> void:
 		mode_buttons[button_index].button_pressed = button_index == index
 
 
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var click := event as InputEventMouseButton
+		if click.button_index == MOUSE_BUTTON_LEFT and not click.pressed:
+			dragging = false
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var click := event as InputEventMouseButton
-		if click.button_index == MOUSE_BUTTON_LEFT:
-			dragging = click.pressed and click.position.x > 420.0
+		if click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+			dragging = click.position.x > 420.0
+		elif click.pressed and click.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_camera(-1.0)
+		elif click.pressed and click.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_camera(1.0)
 	elif event is InputEventMouseMotion and dragging:
 		var motion := event as InputEventMouseMotion
-		orb.rotate_y(motion.relative.x * 0.008)
-		orb.rotate_x(motion.relative.y * 0.008)
+		orbit_yaw += motion.relative.x * 0.008
+		orbit_pitch = clampf(orbit_pitch + motion.relative.y * 0.008, -MAX_PITCH, MAX_PITCH)
+		_update_orbit()
 	elif event is InputEventKey:
 		var key := event as InputEventKey
 		if key.pressed and not key.echo and key.keycode == KEY_SPACE:
 			audio_controller.toggle_playback()
+		elif key.pressed and not key.echo and key.keycode == KEY_R:
+			_reset_view()
 		elif key.pressed and not key.echo and key.keycode >= KEY_1 and key.keycode <= KEY_4:
 			_set_mode(key.keycode - KEY_1)
+
+
+func _update_orbit() -> void:
+	orb.rotation = Vector3(orbit_pitch, orbit_yaw, 0.0)
+
+
+func _zoom_camera(direction: float) -> void:
+	camera.position.z = clampf(camera.position.z + direction * CAMERA_STEP, MIN_CAMERA_DISTANCE, MAX_CAMERA_DISTANCE)
+	zoom_label.text = "%d %%" % roundi(DEFAULT_CAMERA_DISTANCE / camera.position.z * 100.0)
+
+
+func _reset_view() -> void:
+	dragging = false
+	orbit_yaw = 0.0
+	orbit_pitch = 0.0
+	camera.position.z = DEFAULT_CAMERA_DISTANCE
+	_update_orbit()
+	zoom_label.text = "100 %"
 
 
 func _create_interface() -> void:
@@ -104,6 +149,8 @@ func _create_interface() -> void:
 
 	column.add_child(_label("ИСТОЧНИК ЗВУКА", 12, Color(0.42, 0.78, 0.9)))
 	source_name_label = _label("", 21, Color(0.92, 0.97, 1.0))
+	source_name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	source_name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(source_name_label)
 	source_description_label = _label("", 13, Color(0.55, 0.65, 0.76))
 	column.add_child(source_description_label)
@@ -125,8 +172,18 @@ func _create_interface() -> void:
 	play_button.pressed.connect(audio_controller.toggle_playback)
 	column.add_child(play_button)
 
+	status_panel = PanelContainer.new()
+	status_panel.custom_minimum_size.y = 44.0
+	column.add_child(status_panel)
+	var status_padding := MarginContainer.new()
+	status_padding.add_theme_constant_override("margin_left", 12)
+	status_padding.add_theme_constant_override("margin_right", 12)
+	status_padding.add_theme_constant_override("margin_top", 6)
+	status_padding.add_theme_constant_override("margin_bottom", 6)
+	status_panel.add_child(status_padding)
 	playback_label = _label("", 13, Color(0.56, 0.7, 0.77))
-	column.add_child(playback_label)
+	playback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	status_padding.add_child(playback_label)
 
 	column.add_child(_label("СПЕКТР В РЕАЛЬНОМ ВРЕМЕНИ", 12, Color(0.42, 0.78, 0.9)))
 	var spectrum_group := VBoxContainer.new()
@@ -139,7 +196,7 @@ func _create_interface() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(spacer)
-	column.add_child(_label("Пробел — воспроизведение · Мышь — вращение", 12, Color(0.63, 0.73, 0.83)))
+	column.add_child(_label("Пробел — пауза  ·  ЛКМ — вращение", 12, Color(0.63, 0.73, 0.83)))
 
 	var corner := _label("3D  /  AUDIO", 12, Color(0.46, 0.68, 0.79))
 	corner.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -150,6 +207,7 @@ func _create_interface() -> void:
 	corner.offset_right = -28.0
 	corner.offset_top = 32.0
 	corner.offset_bottom = 60.0
+	_create_camera_panel(screen)
 
 	var mode_panel := PanelContainer.new()
 	screen.add_child(mode_panel)
@@ -195,6 +253,48 @@ func _create_interface() -> void:
 	file_dialog.filters = PackedStringArray(["*.mp3 ; MP3", "*.wav ; WAV", "*.ogg ; OGG Vorbis"])
 	file_dialog.file_selected.connect(_on_file_selected)
 	add_child(file_dialog)
+
+
+func _create_camera_panel(screen: Control) -> void:
+	var camera_panel := PanelContainer.new()
+	screen.add_child(camera_panel)
+	camera_panel.anchor_left = 1.0
+	camera_panel.anchor_right = 1.0
+	camera_panel.offset_left = -278.0
+	camera_panel.offset_right = -28.0
+	camera_panel.offset_top = 80.0
+	camera_panel.offset_bottom = 191.0
+	camera_panel.add_theme_stylebox_override("panel", _panel_style())
+	var camera_padding := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		camera_padding.add_theme_constant_override("margin_" + side, 12)
+	camera_panel.add_child(camera_padding)
+	var camera_column := VBoxContainer.new()
+	camera_column.add_theme_constant_override("separation", 5)
+	camera_padding.add_child(camera_column)
+	camera_column.add_child(_label("РАКУРС", 11, Color(0.54, 0.77, 0.87)))
+	var camera_row := HBoxContainer.new()
+	camera_row.add_theme_constant_override("separation", 6)
+	camera_column.add_child(camera_row)
+	var zoom_out_button := _button("−", false)
+	zoom_out_button.custom_minimum_size = Vector2(35.0, 33.0)
+	zoom_out_button.pressed.connect(_zoom_camera.bind(1.0))
+	camera_row.add_child(zoom_out_button)
+	zoom_label = _label("100 %", 13, Color(0.91, 0.96, 1.0))
+	zoom_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	zoom_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	zoom_label.custom_minimum_size.x = 53.0
+	camera_row.add_child(zoom_label)
+	var zoom_in_button := _button("+", false)
+	zoom_in_button.custom_minimum_size = Vector2(35.0, 33.0)
+	zoom_in_button.pressed.connect(_zoom_camera.bind(-1.0))
+	camera_row.add_child(zoom_in_button)
+	camera_reset_button = _button("Сброс", false)
+	camera_reset_button.custom_minimum_size.y = 33.0
+	camera_reset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	camera_reset_button.pressed.connect(_reset_view)
+	camera_row.add_child(camera_reset_button)
+	camera_column.add_child(_label("Колесо — масштаб  ·  R — сброс", 11, Color(0.63, 0.73, 0.83)))
 
 
 func _add_spectrum_row(parent: VBoxContainer, title: String, color: Color) -> void:
@@ -262,17 +362,23 @@ func _show_file_dialog() -> void:
 
 func _on_file_selected(path: String) -> void:
 	if not audio_controller.load_file(path):
-		playback_label.text = audio_controller.last_error
-		playback_label.add_theme_color_override("font_color", Color(1.0, 0.53, 0.53))
+		_set_status(audio_controller.last_error, true)
 
 
 func _update_source_interface() -> void:
 	source_name_label.text = audio_controller.source_name
+	source_name_label.tooltip_text = audio_controller.source_name
 	source_description_label.text = audio_controller.source_description
 
 
 func _update_playback_interface() -> void:
 	var active := audio_controller.is_active()
-	play_button.text = "Ⅱ  Приостановить" if active else "▶  Воспроизвести"
-	playback_label.text = "Звук воспроизводится" if active else "Готово к воспроизведению"
-	playback_label.add_theme_color_override("font_color", Color(0.56, 0.7, 0.77))
+	var paused := audio_controller.player.stream_paused
+	play_button.text = "Ⅱ  Приостановить" if active else ("▶  Продолжить" if paused else "▶  Воспроизвести")
+	_set_status("Звук воспроизводится" if active else ("Воспроизведение приостановлено" if paused else "Готово к воспроизведению"), false)
+
+
+func _set_status(message: String, is_error: bool) -> void:
+	playback_label.text = message
+	playback_label.add_theme_color_override("font_color", Color(1.0, 0.68, 0.68) if is_error else Color(0.67, 0.85, 0.9))
+	status_panel.add_theme_stylebox_override("panel", _button_style(Color(0.29, 0.1, 0.17) if is_error else Color(0.07, 0.17, 0.23)))

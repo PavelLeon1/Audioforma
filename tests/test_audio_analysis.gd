@@ -40,6 +40,7 @@ func _run() -> void:
 			_fail("Сигнал %d Гц не выделился в ожидаемой полосе" % entry.hz)
 			return
 		if entry.hz == 80:
+			var position_before_pause := player.get_playback_position()
 			controller.toggle_playback()
 			if controller.is_active():
 				_fail("Пауза должна останавливать анализ и воспроизведение")
@@ -51,9 +52,16 @@ func _run() -> void:
 			if paused_volume >= volume * 0.4:
 				_fail("При паузе свечение должно затухать")
 				return
+			if absf(player.get_playback_position() - position_before_pause) > 0.06:
+				_fail("Позиция воспроизведения меняется во время паузы")
+				return
 			controller.toggle_playback()
 			if not controller.is_active():
 				_fail("После паузы воспроизведение должно продолжаться")
+				return
+			await create_timer(0.12).timeout
+			if player.get_playback_position() <= position_before_pause + 0.05:
+				_fail("Возобновление должно продолжать звук с прежней позиции")
 				return
 
 	for extension in ["mp3", "ogg"]:
