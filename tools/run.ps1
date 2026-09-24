@@ -1,6 +1,7 @@
 param(
     [switch]$Headless,
-    [int]$QuitAfter = 0
+    [int]$QuitAfter = 0,
+    [string]$Script = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +25,7 @@ try {
     $arguments = @('--path', $projectRoot, '--log-file', (Join-Path $logs 'godot.log'))
     if ($Headless) { $arguments += '--headless' }
     if ($QuitAfter -gt 0) { $arguments += @('--quit-after', "$QuitAfter") }
+    if ($Script) { $arguments += @('--script', $Script) }
     & $editor @arguments
     if ($LASTEXITCODE -ne 0) {
         throw "Godot завершился с кодом $LASTEXITCODE"

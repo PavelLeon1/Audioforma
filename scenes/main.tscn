@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="AudioStream" path="res://assets/audio/demo.wav" id="2_demo"]
+[ext_resource type="Script" path="res://scripts/audio_controller.gd" id="3_audio"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_orb"]
 radius = 1.42
@@ -43,3 +44,6 @@ omni_range = 8.0
 
 [node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_demo")
+
+[node name="AudioController" type="Node" parent="."]
+script = ExtResource("3_audio")

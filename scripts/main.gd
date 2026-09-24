@@ -1,21 +1,31 @@
 extends Node3D
 
 @onready var orb: MeshInstance3D = $Orb
-@onready var audio_player: AudioStreamPlayer = $AudioPlayer
+@onready var audio_controller: AudioController = $AudioController
 
 var play_button: Button
 var playback_label: Label
+var source_name_label: Label
+var source_description_label: Label
+var file_dialog: FileDialog
+var spectrum_bars: Array[ProgressBar] = []
 var dragging := false
 
 
 func _ready() -> void:
-	audio_player.finished.connect(_on_audio_finished)
 	_create_interface()
+	audio_controller.playback_changed.connect(_update_playback_interface)
+	audio_controller.source_changed.connect(_update_source_interface)
+	_update_source_interface()
+	_update_playback_interface()
 
 
 func _process(delta: float) -> void:
 	if not dragging:
 		orb.rotate_y(delta * 0.12)
+	var bands := audio_controller.get_spectrum_analysis(delta)
+	for index in range(3):
+		spectrum_bars[index].value = bands[index] * 100.0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -30,7 +40,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey:
 		var key := event as InputEventKey
 		if key.pressed and not key.echo and key.keycode == KEY_SPACE:
-			_toggle_playback()
+			audio_controller.toggle_playback()
 
 
 func _create_interface() -> void:
@@ -53,46 +63,56 @@ func _create_interface() -> void:
 
 	var padding := MarginContainer.new()
 	for side in ["left", "right", "top", "bottom"]:
-		padding.add_theme_constant_override("margin_" + side, 26)
+		padding.add_theme_constant_override("margin_" + side, 23)
 	panel.add_child(padding)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 17)
+	column.add_theme_constant_override("separation", 11)
 	padding.add_child(column)
 
-	var eyebrow := _label("ПРОГРАММИРОВАНИЕ ГРАФИКИ И ЗВУКА", 11, Color(0.42, 0.78, 0.9))
-	column.add_child(eyebrow)
-	column.add_child(_label("АУДИО\nФОРМА", 43, Color(0.94, 0.98, 1.0)))
-	column.add_child(_label("Музыка обретает форму в трёхмерном пространстве.", 16, Color(0.61, 0.72, 0.81)))
+	column.add_child(_label("ПРОГРАММИРОВАНИЕ ГРАФИКИ И ЗВУКА", 11, Color(0.42, 0.78, 0.9)))
+	column.add_child(_label("АУДИО\nФОРМА", 40, Color(0.94, 0.98, 1.0)))
+	column.add_child(_label("Музыка обретает форму в трёхмерном пространстве.", 15, Color(0.61, 0.72, 0.81)))
+	column.add_child(HSeparator.new())
 
-	var divider := HSeparator.new()
-	column.add_child(divider)
+	column.add_child(_label("ИСТОЧНИК ЗВУКА", 12, Color(0.42, 0.78, 0.9)))
+	source_name_label = _label("", 21, Color(0.92, 0.97, 1.0))
+	column.add_child(source_name_label)
+	source_description_label = _label("", 13, Color(0.55, 0.65, 0.76))
+	column.add_child(source_description_label)
 
-	column.add_child(_label("ДЕМОНСТРАЦИЯ", 12, Color(0.42, 0.78, 0.9)))
-	column.add_child(_label("Спектральный этюд", 22, Color(0.92, 0.97, 1.0)))
-	column.add_child(_label("Авторский аудиофрагмент · 24 секунды", 13, Color(0.55, 0.65, 0.76)))
+	var source_buttons := HBoxContainer.new()
+	source_buttons.add_theme_constant_override("separation", 9)
+	column.add_child(source_buttons)
+	var open_button := _button("Выбрать файл", false)
+	open_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	open_button.pressed.connect(_show_file_dialog)
+	source_buttons.add_child(open_button)
+	var demo_button := _button("Демо", false)
+	demo_button.custom_minimum_size.x = 90.0
+	demo_button.pressed.connect(audio_controller.load_demo)
+	source_buttons.add_child(demo_button)
 
-	play_button = Button.new()
-	play_button.text = "▶  Воспроизвести"
-	play_button.custom_minimum_size = Vector2(0, 55)
-	play_button.add_theme_font_size_override("font_size", 17)
-	play_button.add_theme_color_override("font_color", Color(0.04, 0.12, 0.19))
-	play_button.add_theme_color_override("font_hover_color", Color(0.04, 0.12, 0.19))
-	play_button.add_theme_stylebox_override("normal", _button_style(Color(0.35, 0.83, 0.91)))
-	play_button.add_theme_stylebox_override("hover", _button_style(Color(0.54, 0.92, 0.98)))
-	play_button.add_theme_stylebox_override("pressed", _button_style(Color(0.23, 0.66, 0.74)))
-	play_button.pressed.connect(_toggle_playback)
+	play_button = _button("▶  Воспроизвести", true)
+	play_button.custom_minimum_size.y = 50.0
+	play_button.pressed.connect(audio_controller.toggle_playback)
 	column.add_child(play_button)
 
-	playback_label = _label("Готово к воспроизведению", 13, Color(0.56, 0.7, 0.77))
+	playback_label = _label("", 13, Color(0.56, 0.7, 0.77))
 	column.add_child(playback_label)
+
+	column.add_child(_label("СПЕКТР В РЕАЛЬНОМ ВРЕМЕНИ", 12, Color(0.42, 0.78, 0.9)))
+	var spectrum_group := VBoxContainer.new()
+	spectrum_group.add_theme_constant_override("separation", 5)
+	column.add_child(spectrum_group)
+	_add_spectrum_row(spectrum_group, "БАСЫ", Color(0.35, 0.83, 0.91))
+	_add_spectrum_row(spectrum_group, "СЕРЕДИНА", Color(0.53, 0.68, 1.0))
+	_add_spectrum_row(spectrum_group, "ВЫСОКИЕ", Color(0.77, 0.49, 0.96))
 
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(spacer)
-
-	column.add_child(_label("УПРАВЛЕНИЕ", 12, Color(0.42, 0.78, 0.9)))
-	column.add_child(_label("Пробел — воспроизвести или приостановить\nМышь — вращать объект", 14, Color(0.63, 0.73, 0.83)))
+	column.add_child(_label("Пробел — воспроизведение · Мышь — вращение", 12, Color(0.63, 0.73, 0.83)))
 
 	var corner := _label("3D  /  AUDIO", 12, Color(0.46, 0.68, 0.79))
 	corner.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -104,6 +124,32 @@ func _create_interface() -> void:
 	corner.offset_top = 32.0
 	corner.offset_bottom = 60.0
 
+	file_dialog = FileDialog.new()
+	file_dialog.title = "Выберите аудиофайл"
+	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	file_dialog.filters = PackedStringArray(["*.mp3 ; MP3", "*.wav ; WAV", "*.ogg ; OGG Vorbis"])
+	file_dialog.file_selected.connect(_on_file_selected)
+	add_child(file_dialog)
+
+
+func _add_spectrum_row(parent: VBoxContainer, title: String, color: Color) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 9)
+	parent.add_child(row)
+	var name_label := _label(title, 11, Color(0.63, 0.73, 0.83))
+	name_label.custom_minimum_size.x = 78.0
+	row.add_child(name_label)
+	var meter := ProgressBar.new()
+	meter.max_value = 100.0
+	meter.show_percentage = false
+	meter.custom_minimum_size.y = 12.0
+	meter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	meter.add_theme_stylebox_override("background", _button_style(Color(0.11, 0.18, 0.26)))
+	meter.add_theme_stylebox_override("fill", _button_style(color))
+	row.add_child(meter)
+	spectrum_bars.append(meter)
+
 
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -112,6 +158,22 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	return label
+
+
+func _button(value: String, primary: bool) -> Button:
+	var button := Button.new()
+	button.text = value
+	button.custom_minimum_size.y = 43.0
+	button.add_theme_font_size_override("font_size", 15)
+	var base := Color(0.35, 0.83, 0.91) if primary else Color(0.14, 0.25, 0.34)
+	var hover := Color(0.54, 0.92, 0.98) if primary else Color(0.19, 0.33, 0.44)
+	var pressed := Color(0.23, 0.66, 0.74) if primary else Color(0.11, 0.2, 0.29)
+	button.add_theme_color_override("font_color", Color(0.04, 0.12, 0.19) if primary else Color(0.8, 0.92, 0.97))
+	button.add_theme_color_override("font_hover_color", Color(0.04, 0.12, 0.19) if primary else Color.WHITE)
+	button.add_theme_stylebox_override("normal", _button_style(base))
+	button.add_theme_stylebox_override("hover", _button_style(hover))
+	button.add_theme_stylebox_override("pressed", _button_style(pressed))
+	return button
 
 
 func _panel_style() -> StyleBoxFlat:
@@ -126,23 +188,27 @@ func _panel_style() -> StyleBoxFlat:
 func _button_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.set_corner_radius_all(13)
+	style.set_corner_radius_all(11)
 	return style
 
 
-func _toggle_playback() -> void:
-	if audio_player.playing:
-		audio_player.stream_paused = not audio_player.stream_paused
-	else:
-		audio_player.play()
-	_update_playback_interface()
+func _show_file_dialog() -> void:
+	file_dialog.popup_centered_ratio(0.72)
+
+
+func _on_file_selected(path: String) -> void:
+	if not audio_controller.load_file(path):
+		playback_label.text = audio_controller.last_error
+		playback_label.add_theme_color_override("font_color", Color(1.0, 0.53, 0.53))
+
+
+func _update_source_interface() -> void:
+	source_name_label.text = audio_controller.source_name
+	source_description_label.text = audio_controller.source_description
 
 
 func _update_playback_interface() -> void:
-	var active := audio_player.playing and not audio_player.stream_paused
+	var active := audio_controller.is_active()
 	play_button.text = "Ⅱ  Приостановить" if active else "▶  Воспроизвести"
-	playback_label.text = "Звучит демонстрационный трек" if active else "Готово к воспроизведению"
-
-
-func _on_audio_finished() -> void:
-	_update_playback_interface()
+	playback_label.text = "Звук воспроизводится" if active else "Готово к воспроизведению"
+	playback_label.add_theme_color_override("font_color", Color(0.56, 0.7, 0.77))
