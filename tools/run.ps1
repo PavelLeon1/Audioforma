@@ -18,17 +18,24 @@ $roaming = Join-Path $profileRoot 'Roaming'
 $local = Join-Path $profileRoot 'Local'
 $logs = Join-Path $projectRoot '.local\logs'
 New-Item -ItemType Directory -Force -Path $roaming, $local, $logs | Out-Null
+$importLog = Join-Path $logs 'import.log'
+$runLog = Join-Path $logs 'godot.log'
 
 try {
     $env:APPDATA = $roaming
     $env:LOCALAPPDATA = $local
-    $arguments = @('--path', $projectRoot, '--log-file', (Join-Path $logs 'godot.log'))
+    & $editor --headless --path $projectRoot --import --log-file $importLog
+    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $importLog -Pattern 'SCRIPT ERROR:|Parse Error:' -Quiet)) {
+        throw 'Не удалось импортировать ресурсы проекта Godot.'
+    }
+
+    $arguments = @('--path', $projectRoot, '--log-file', $runLog)
     if ($Headless) { $arguments += '--headless' }
     if ($QuitAfter -gt 0) { $arguments += @('--quit-after', "$QuitAfter") }
     if ($Script) { $arguments += @('--script', $Script) }
     & $editor @arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Godot завершился с кодом $LASTEXITCODE"
+    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $runLog -Pattern 'SCRIPT ERROR:|Parse Error:' -Quiet)) {
+        throw "Godot завершился с ошибкой; журнал: $runLog"
     }
 }
 finally {
