@@ -24,10 +24,15 @@ func _run() -> void:
 			_fail("Не удалось загрузить %s: %s" % [path, controller.last_error])
 			return
 		var levels := Vector3.ZERO
+		var volume := 0.0
 		for frame in range(20):
 			await create_timer(0.04).timeout
 			levels = controller.get_spectrum_analysis(0.04)
+			volume = controller.get_audio_level(0.04)
 		print("TONE %d Hz: %.3f %.3f %.3f" % [entry.hz, levels.x, levels.y, levels.z])
+		if volume < 0.2:
+			_fail("Сигнал %d Гц не изменил общую громкость" % entry.hz)
+			return
 		var selected: float = levels[entry.band]
 		var other_a: float = levels[(entry.band + 1) % 3]
 		var other_b: float = levels[(entry.band + 2) % 3]
@@ -38,6 +43,13 @@ func _run() -> void:
 			controller.toggle_playback()
 			if controller.is_active():
 				_fail("Пауза должна останавливать анализ и воспроизведение")
+				return
+			var paused_volume := volume
+			for frame in range(10):
+				await create_timer(0.04).timeout
+				paused_volume = controller.get_audio_level(0.04)
+			if paused_volume >= volume * 0.4:
+				_fail("При паузе свечение должно затухать")
 				return
 			controller.toggle_playback()
 			if not controller.is_active():
@@ -71,7 +83,7 @@ func _run() -> void:
 		_fail("Не удалось вернуться к демофрагменту")
 		return
 
-	print("PASS: загрузка WAV/MP3/OGG и разделение трёх диапазонов")
+	print("PASS: загрузка WAV/MP3/OGG, спектр и общая громкость")
 	player.stop()
 	holder.queue_free()
 	await create_timer(0.3).timeout

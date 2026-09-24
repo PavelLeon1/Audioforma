@@ -21,6 +21,14 @@ static func smooth(current: Vector3, target: Vector3, delta: float) -> Vector3:
 	)
 
 
+static func normalize_peak(decibels: float) -> float:
+	return clampf((decibels + 60.0) / 54.0, 0.0, 1.0)
+
+
+static func smooth_level(current: float, target: float, delta: float) -> float:
+	return _smooth_channel(current, target, delta)
+
+
 static func _smooth_channel(current: float, target: float, delta: float) -> float:
 	var duration := ATTACK_SECONDS if target > current else RELEASE_SECONDS
 	var weight := 1.0 - exp(-maxf(delta, 0.0) / duration)

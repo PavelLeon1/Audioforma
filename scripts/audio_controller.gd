@@ -16,6 +16,7 @@ var last_error := ""
 var _bus_index := -1
 var _analyzer: AudioEffectSpectrumAnalyzerInstance
 var _spectrum := Vector3.ZERO
+var _level := 0.0
 
 
 func _ready() -> void:
@@ -86,6 +87,16 @@ func get_spectrum_analysis(delta: float) -> Vector3:
 	return _spectrum
 
 
+func get_audio_level(delta: float) -> float:
+	var target := 0.0
+	if is_active() and _bus_index >= 0:
+		var left := AudioServer.get_bus_peak_volume_left_db(_bus_index, 0)
+		var right := AudioServer.get_bus_peak_volume_right_db(_bus_index, 0)
+		target = SpectrumMapper.normalize_peak(maxf(left, right))
+	_level = SpectrumMapper.smooth_level(_level, target, delta)
+	return _level
+
+
 func _read_band(from_hz: float, to_hz: float) -> float:
 	var stereo := _analyzer.get_magnitude_for_frequency_range(
 		from_hz, to_hz, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX
@@ -118,6 +129,7 @@ func _set_stream(stream: AudioStream, name: String, format: String, autoplay: bo
 	var seconds := roundi(stream.get_length())
 	source_description = "%s · %d с" % [format, seconds]
 	_spectrum = Vector3.ZERO
+	_level = 0.0
 	if autoplay:
 		player.play()
 	source_changed.emit()

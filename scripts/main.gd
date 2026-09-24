@@ -2,6 +2,7 @@ extends Node3D
 
 @onready var orb: MeshInstance3D = $Orb
 @onready var audio_controller: AudioController = $AudioController
+@onready var orb_material: ShaderMaterial = orb.get_surface_override_material(0) as ShaderMaterial
 
 var play_button: Button
 var playback_label: Label
@@ -9,11 +10,15 @@ var source_name_label: Label
 var source_description_label: Label
 var file_dialog: FileDialog
 var spectrum_bars: Array[ProgressBar] = []
+var mode_buttons: Array[Button] = []
 var dragging := false
+var motion_time := 0.0
+var deformation_mode := 0
 
 
 func _ready() -> void:
 	_create_interface()
+	_set_mode(0)
 	audio_controller.playback_changed.connect(_update_playback_interface)
 	audio_controller.source_changed.connect(_update_source_interface)
 	_update_source_interface()
@@ -24,8 +29,28 @@ func _process(delta: float) -> void:
 	if not dragging:
 		orb.rotate_y(delta * 0.12)
 	var bands := audio_controller.get_spectrum_analysis(delta)
+	var level := audio_controller.get_audio_level(delta)
+	motion_time += delta
+	_apply_audio_state(bands, level)
 	for index in range(3):
 		spectrum_bars[index].value = bands[index] * 100.0
+
+
+func _apply_audio_state(bands: Vector3, level: float) -> void:
+	orb_material.set_shader_parameter("bass", bands.x)
+	orb_material.set_shader_parameter("mid", bands.y)
+	orb_material.set_shader_parameter("high", bands.z)
+	orb_material.set_shader_parameter("level", level)
+	orb_material.set_shader_parameter("motion_time", motion_time)
+
+
+func _set_mode(index: int) -> void:
+	if index < 0 or index > 3:
+		return
+	deformation_mode = index
+	orb_material.set_shader_parameter("deformation_mode", index)
+	for button_index in range(mode_buttons.size()):
+		mode_buttons[button_index].button_pressed = button_index == index
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -41,6 +66,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		var key := event as InputEventKey
 		if key.pressed and not key.echo and key.keycode == KEY_SPACE:
 			audio_controller.toggle_playback()
+		elif key.pressed and not key.echo and key.keycode >= KEY_1 and key.keycode <= KEY_4:
+			_set_mode(key.keycode - KEY_1)
 
 
 func _create_interface() -> void:
@@ -123,6 +150,43 @@ func _create_interface() -> void:
 	corner.offset_right = -28.0
 	corner.offset_top = 32.0
 	corner.offset_bottom = 60.0
+
+	var mode_panel := PanelContainer.new()
+	screen.add_child(mode_panel)
+	mode_panel.anchor_left = 1.0
+	mode_panel.anchor_right = 1.0
+	mode_panel.anchor_top = 1.0
+	mode_panel.anchor_bottom = 1.0
+	mode_panel.offset_left = -624.0
+	mode_panel.offset_right = -28.0
+	mode_panel.offset_top = -120.0
+	mode_panel.offset_bottom = -24.0
+	mode_panel.add_theme_stylebox_override("panel", _panel_style())
+	var mode_padding := MarginContainer.new()
+	mode_padding.add_theme_constant_override("margin_left", 18)
+	mode_padding.add_theme_constant_override("margin_right", 18)
+	mode_padding.add_theme_constant_override("margin_top", 12)
+	mode_padding.add_theme_constant_override("margin_bottom", 12)
+	mode_panel.add_child(mode_padding)
+	var mode_column := VBoxContainer.new()
+	mode_column.add_theme_constant_override("separation", 6)
+	mode_padding.add_child(mode_column)
+	mode_column.add_child(_label("РЕЖИМ ДЕФОРМАЦИИ  ·  КЛАВИШИ 1–4", 11, Color(0.54, 0.77, 0.87)))
+	var mode_row := HBoxContainer.new()
+	mode_row.add_theme_constant_override("separation", 7)
+	mode_column.add_child(mode_row)
+	var mode_group := ButtonGroup.new()
+	for index in range(4):
+		var mode_button := _button(["Все", "Пульс", "Волны", "Рябь"][index], false)
+		mode_button.toggle_mode = true
+		mode_button.button_group = mode_group
+		mode_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		mode_button.custom_minimum_size.y = 35.0
+		mode_button.add_theme_stylebox_override("pressed", _button_style(Color(0.35, 0.83, 0.91)))
+		mode_button.add_theme_color_override("font_pressed_color", Color(0.04, 0.12, 0.19))
+		mode_button.pressed.connect(_set_mode.bind(index))
+		mode_row.add_child(mode_button)
+		mode_buttons.append(mode_button)
 
 	file_dialog = FileDialog.new()
 	file_dialog.title = "Выберите аудиофайл"
