@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="AudioStream" path="res://assets/audio/demo.wav" id="2_demo"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_orb"]
+radius = 1.42
+height = 2.84
+radial_segments = 96
+rings = 64
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_orb"]
+albedo_color = Color(0.13, 0.46, 0.8, 1)
+metallic = 0.36
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.02, 0.2, 0.45, 1)
+emission_energy_multiplier = 0.8
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="Orb" type="MeshInstance3D" parent="."]
+position = Vector3(1.55, 0, 0)
+mesh = SubResource("SphereMesh_orb")
+surface_material_override/0 = SubResource("StandardMaterial3D_orb")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 0, 7)
+current = true
+fov = 58.0
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.55, 0.7, 0)
+light_color = Color(0.48, 0.82, 1, 1)
+light_energy = 1.5
+
+[node name="FillLight" type="OmniLight3D" parent="."]
+position = Vector3(2.7, -1.8, 2.8)
+light_color = Color(0.54, 0.26, 1, 1)
+light_energy = 3.0
+omni_range = 8.0
+
+[node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_demo")

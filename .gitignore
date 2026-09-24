@@ -1,0 +1,4 @@
+.godot/
+.local/
+dist/
+*.tmp
