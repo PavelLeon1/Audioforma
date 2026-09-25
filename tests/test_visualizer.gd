@@ -12,11 +12,15 @@ func _run() -> void:
 	root.add_child(scene)
 	await process_frame
 	var material := (scene.get_node("Orb") as MeshInstance3D).get_surface_override_material(0) as ShaderMaterial
+	var halo_material := (scene.get_node("Orb/Halo") as MeshInstance3D).get_surface_override_material(0) as ShaderMaterial
 	if material == null or material.shader == null:
 		_fail("У сферы отсутствует кодовый пространственный шейдер")
 		return
 	if material.shader.code.find("void vertex()") < 0 or material.shader.code.find("void fragment()") < 0:
 		_fail("Шейдер должен содержать вершинную и фрагментную части")
+		return
+	if halo_material == null or halo_material.shader == null or halo_material.shader.code.find("void fragment()") < 0:
+		_fail("Светящийся контур должен использовать кодовый шейдер")
 		return
 	if not (scene.get_node("WorldEnvironment") as WorldEnvironment).environment.glow_enabled:
 		_fail("Свечение сцены не включено")
@@ -24,18 +28,18 @@ func _run() -> void:
 
 	scene._apply_audio_state(Vector3(0.4, 0.6, 0.8), 0.7)
 	for parameter in [{"name": "bass", "value": 0.4}, {"name": "mid", "value": 0.6}, {"name": "high", "value": 0.8}, {"name": "level", "value": 0.7}]:
-		if not is_equal_approx(material.get_shader_parameter(parameter.name), parameter.value):
+		if not is_equal_approx(material.get_shader_parameter(parameter.name), parameter.value) or not is_equal_approx(halo_material.get_shader_parameter(parameter.name), parameter.value):
 			_fail("Параметр %s не передан в шейдер" % parameter.name)
 			return
 
 	for index in range(4):
 		scene._set_mode(index)
-		if material.get_shader_parameter("deformation_mode") != index or not scene.mode_buttons[index].button_pressed:
+		if material.get_shader_parameter("deformation_mode") != index or halo_material.get_shader_parameter("deformation_mode") != index or not scene.mode_buttons[index].button_pressed:
 			_fail("Режим %d не выбран в шейдере и интерфейсе" % index)
 			return
 	scene.motion_time = 1.25
 	scene._register_bass_hit(0.8)
-	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_a"), 1.25) or not is_equal_approx(material.get_shader_parameter("bass_hit_strength_a"), 0.8):
+	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_a"), 1.25) or not is_equal_approx(material.get_shader_parameter("bass_hit_strength_a"), 0.8) or not is_equal_approx(halo_material.get_shader_parameter("bass_hit_strength_a"), 0.8):
 		_fail("Басовый удар не передан в шейдер")
 		return
 	scene.motion_time = 1.65
@@ -44,9 +48,42 @@ func _run() -> void:
 		_fail("Следующий басовый удар должен запускать отдельную волну")
 		return
 	scene._reset_bass_waves()
-	if material.get_shader_parameter("bass_hit_strength_a") != 0.0 or material.get_shader_parameter("bass_hit_strength_b") != 0.0:
+	if material.get_shader_parameter("bass_hit_strength_a") != 0.0 or material.get_shader_parameter("bass_hit_strength_b") != 0.0 or halo_material.get_shader_parameter("bass_hit_strength_a") != 0.0:
 		_fail("При смене трека старые волны должны исчезнуть")
 		return
+
+	scene._loading_appearance = true
+	scene._toggle_appearance_panel()
+	if not scene.appearance_panel.visible or scene.source_panel.visible:
+		_fail("Панель настроек не открылась")
+		return
+	var done_button := scene.appearance_panel.find_child("DoneButton", true, false) as Button
+	if done_button == null or done_button.get_global_rect().end.y > scene.appearance_panel.get_global_rect().end.y - 12.0:
+		_fail("Кнопка закрытия выходит за границы панели настроек")
+		return
+	scene.accent_picker.color = Color(1.0, 0.6, 0.1)
+	scene.background_picker.color = Color(0.08, 0.02, 0.03)
+	scene.appearance_sliders["spectrum_mix"].value = 0.0
+	scene.appearance_sliders["glow_strength"].value = 1.4
+	scene.appearance_sliders["rotation_speed"].value = 0.0
+	scene.appearance_sliders["beat_sensitivity"].value = 1.5
+	scene._apply_visual_settings()
+	for visual_material in [material, halo_material]:
+		if visual_material.get_shader_parameter("accent_color") != scene.accent_picker.color or not is_equal_approx(visual_material.get_shader_parameter("glow_strength"), 1.4):
+			_fail("Настройки цвета и свечения не переданы обоим слоям")
+			return
+	if (scene.get_node("WorldEnvironment") as WorldEnvironment).environment.background_color != scene.background_picker.color or scene._auto_rotation_factor != 0.0 or not is_equal_approx(scene.audio_controller.get_bass_sensitivity(), 1.5):
+		_fail("Настройки фона, автовращения и чувствительности не применились")
+		return
+	scene._reset_appearance()
+	if not is_equal_approx(material.get_shader_parameter("glow_strength"), 1.0):
+		_fail("Сброс настроек не восстановил свечение")
+		return
+	scene._toggle_appearance_panel()
+	if scene.appearance_panel.visible or not scene.source_panel.visible:
+		_fail("Панель настроек не закрылась")
+		return
+	scene._loading_appearance = false
 
 	scene.set_process(false)
 	var camera := scene.get_node("Camera3D") as Camera3D

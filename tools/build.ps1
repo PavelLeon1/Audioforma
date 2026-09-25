@@ -40,6 +40,9 @@ try {
     if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://scripts/bass_beat_detector.gdc' -Quiet)) {
         throw 'Детектор басовых ударов отсутствует в сборке.'
     }
+    if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://shaders/halo.gdshader' -Quiet)) {
+        throw 'Шейдер светящегося контура отсутствует в сборке.'
+    }
     if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|AGENT.md' -Quiet) {
         throw 'Сборка содержит файлы разработки.'
     }

@@ -10,6 +10,7 @@ var _initialized := false
 var _baseline_db := 0.0
 var _previous_db := 0.0
 var _cooldown := 0.0
+var sensitivity := 1.0
 
 
 func reset() -> void:
@@ -34,7 +35,7 @@ func update(magnitude: float, delta: float, active: bool) -> float:
 	_cooldown = maxf(0.0, _cooldown - maxf(delta, 0.0))
 	var contrast := current_db - _baseline_db
 	var rise := current_db - _previous_db
-	var detected := current_db >= MIN_DB and contrast >= ONSET_DB and rise >= RISE_DB and _cooldown <= 0.0
+	var detected := current_db >= MIN_DB and contrast >= ONSET_DB / sensitivity and rise >= RISE_DB / sensitivity and _cooldown <= 0.0
 	var baseline_weight := 1.0 - exp(-maxf(delta, 0.0) / BASELINE_SECONDS)
 	_baseline_db = lerpf(_baseline_db, current_db, baseline_weight)
 	_previous_db = current_db

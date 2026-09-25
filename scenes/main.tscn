@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="AudioStream" path="res://assets/audio/demo.wav" id="2_demo"]
 [ext_resource type="Script" path="res://scripts/audio_controller.gd" id="3_audio"]
 [ext_resource type="Shader" path="res://shaders/orb.gdshader" id="4_orb_shader"]
+[ext_resource type="Shader" path="res://shaders/halo.gdshader" id="5_halo_shader"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_orb"]
 radius = 1.42
@@ -13,6 +14,9 @@ rings = 64
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_orb"]
 shader = ExtResource("4_orb_shader")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_halo"]
+shader = ExtResource("5_halo_shader")
 
 [sub_resource type="Environment" id="Environment_glow"]
 background_mode = 1
@@ -28,6 +32,10 @@ script = ExtResource("1_main")
 position = Vector3(1.55, 0, 0)
 mesh = SubResource("SphereMesh_orb")
 surface_material_override/0 = SubResource("ShaderMaterial_orb")
+
+[node name="Halo" type="MeshInstance3D" parent="Orb"]
+mesh = SubResource("SphereMesh_orb")
+surface_material_override/0 = SubResource("ShaderMaterial_halo")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_glow")

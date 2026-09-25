@@ -5,11 +5,17 @@ const MIN_CAMERA_DISTANCE := 5.6
 const MAX_CAMERA_DISTANCE := 9.0
 const CAMERA_STEP := 0.5
 const MAX_PITCH := 1.15
+const DEFAULT_ACCENT := Color(0.76, 0.16, 0.92)
+const DEFAULT_BACKGROUND := Color(0.024, 0.035, 0.069)
+const SETTINGS_FILENAME := "Audioforma.ini"
 
 @onready var orb: MeshInstance3D = $Orb
 @onready var camera: Camera3D = $Camera3D
 @onready var audio_controller: AudioController = $AudioController
 @onready var orb_material: ShaderMaterial = orb.get_surface_override_material(0) as ShaderMaterial
+@onready var halo_material: ShaderMaterial = $Orb/Halo.get_surface_override_material(0) as ShaderMaterial
+
+var _reactive_materials: Array[ShaderMaterial] = []
 
 var play_button: Button
 var playback_label: Label
@@ -21,6 +27,15 @@ var camera_reset_button: Button
 var file_dialog: FileDialog
 var spectrum_bars: Array[ProgressBar] = []
 var mode_buttons: Array[Button] = []
+var source_panel: PanelContainer
+var appearance_panel: PanelContainer
+var accent_picker: ColorPickerButton
+var background_picker: ColorPickerButton
+var appearance_sliders: Dictionary = {}
+var appearance_save_label: Label
+var _appearance_save_timer: Timer
+var _loading_appearance := false
+var _auto_rotation_factor := 1.0
 var dragging := false
 var orbit_yaw := 0.0
 var orbit_pitch := 0.0
@@ -30,8 +45,16 @@ var _bass_wave_slot := 0
 
 
 func _ready() -> void:
+	_reactive_materials = [orb_material, halo_material]
+	_appearance_save_timer = Timer.new()
+	_appearance_save_timer.one_shot = true
+	_appearance_save_timer.wait_time = 0.4
+	_appearance_save_timer.timeout.connect(_save_appearance)
+	add_child(_appearance_save_timer)
 	_create_interface()
 	_set_mode(0)
+	_load_appearance()
+	_apply_visual_settings()
 	audio_controller.playback_changed.connect(_update_playback_interface)
 	audio_controller.source_changed.connect(_update_source_interface)
 	audio_controller.source_changed.connect(_reset_bass_waves)
@@ -41,7 +64,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not dragging:
-		orbit_yaw += delta * 0.12
+		orbit_yaw += delta * 0.12 * _auto_rotation_factor
 		_update_orbit()
 	var bands := audio_controller.get_spectrum_analysis(delta)
 	var level := audio_controller.get_audio_level(delta)
@@ -55,32 +78,36 @@ func _process(delta: float) -> void:
 
 
 func _apply_audio_state(bands: Vector3, level: float) -> void:
-	orb_material.set_shader_parameter("bass", bands.x)
-	orb_material.set_shader_parameter("mid", bands.y)
-	orb_material.set_shader_parameter("high", bands.z)
-	orb_material.set_shader_parameter("level", level)
-	orb_material.set_shader_parameter("motion_time", motion_time)
+	for material in _reactive_materials:
+		material.set_shader_parameter("bass", bands.x)
+		material.set_shader_parameter("mid", bands.y)
+		material.set_shader_parameter("high", bands.z)
+		material.set_shader_parameter("level", level)
+		material.set_shader_parameter("motion_time", motion_time)
 
 
 func _register_bass_hit(strength: float) -> void:
 	var suffix := "a" if _bass_wave_slot == 0 else "b"
-	orb_material.set_shader_parameter("bass_hit_time_" + suffix, motion_time)
-	orb_material.set_shader_parameter("bass_hit_strength_" + suffix, strength)
+	for material in _reactive_materials:
+		material.set_shader_parameter("bass_hit_time_" + suffix, motion_time)
+		material.set_shader_parameter("bass_hit_strength_" + suffix, strength)
 	_bass_wave_slot = 1 - _bass_wave_slot
 
 
 func _reset_bass_waves() -> void:
 	_bass_wave_slot = 0
-	for suffix in ["a", "b"]:
-		orb_material.set_shader_parameter("bass_hit_time_" + suffix, -10.0)
-		orb_material.set_shader_parameter("bass_hit_strength_" + suffix, 0.0)
+	for material in _reactive_materials:
+		for suffix in ["a", "b"]:
+			material.set_shader_parameter("bass_hit_time_" + suffix, -10.0)
+			material.set_shader_parameter("bass_hit_strength_" + suffix, 0.0)
 
 
 func _set_mode(index: int) -> void:
 	if index < 0 or index > 3:
 		return
 	deformation_mode = index
-	orb_material.set_shader_parameter("deformation_mode", index)
+	for material in _reactive_materials:
+		material.set_shader_parameter("deformation_mode", index)
 	for button_index in range(mode_buttons.size()):
 		mode_buttons[button_index].button_pressed = button_index == index
 
@@ -112,6 +139,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			audio_controller.toggle_playback()
 		elif key.pressed and not key.echo and key.keycode == KEY_R:
 			_reset_view()
+		elif key.pressed and not key.echo and key.keycode == KEY_S:
+			_toggle_appearance_panel()
 		elif key.pressed and not key.echo and key.keycode >= KEY_1 and key.keycode <= KEY_4:
 			_set_mode(key.keycode - KEY_1)
 
@@ -144,6 +173,7 @@ func _create_interface() -> void:
 	layer.add_child(screen)
 
 	var panel := PanelContainer.new()
+	source_panel = panel
 	screen.add_child(panel)
 	panel.anchor_bottom = 1.0
 	panel.offset_left = 24.0
@@ -215,7 +245,12 @@ func _create_interface() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(spacer)
-	column.add_child(_label("Пробел — пауза  ·  ЛКМ — вращение", 12, Color(0.63, 0.73, 0.83)))
+	var appearance_button := _button("Настроить вид", false)
+	appearance_button.name = "AppearanceButton"
+	appearance_button.tooltip_text = "S — открыть настройки внешнего вида"
+	appearance_button.pressed.connect(_toggle_appearance_panel)
+	column.add_child(appearance_button)
+	_create_appearance_panel(screen)
 
 	var corner := _label("3D  /  AUDIO", 12, Color(0.46, 0.68, 0.79))
 	corner.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -272,6 +307,188 @@ func _create_interface() -> void:
 	file_dialog.filters = PackedStringArray(["*.mp3 ; MP3", "*.wav ; WAV", "*.ogg ; OGG Vorbis"])
 	file_dialog.file_selected.connect(_on_file_selected)
 	add_child(file_dialog)
+
+
+func _create_appearance_panel(screen: Control) -> void:
+	appearance_panel = PanelContainer.new()
+	appearance_panel.visible = false
+	appearance_panel.anchor_bottom = 1.0
+	appearance_panel.offset_left = 24.0
+	appearance_panel.offset_top = 24.0
+	appearance_panel.offset_right = 390.0
+	appearance_panel.offset_bottom = -24.0
+	appearance_panel.add_theme_stylebox_override("panel", _panel_style())
+	screen.add_child(appearance_panel)
+
+	var padding := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		padding.add_theme_constant_override("margin_" + side, 18)
+	appearance_panel.add_child(padding)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 7)
+	padding.add_child(column)
+	column.add_child(_label("НАСТРОЙКА ВИДА", 12, Color(0.42, 0.78, 0.9)))
+	column.add_child(_label("Свет и форма", 27, Color(0.94, 0.98, 1.0)))
+	column.add_child(_label("Изменения видны во время воспроизведения.", 12, Color(0.61, 0.72, 0.81)))
+	column.add_child(HSeparator.new())
+
+	var accent_row := HBoxContainer.new()
+	column.add_child(accent_row)
+	var accent_label := _label("Цвет контура", 13, Color(0.8, 0.9, 0.96))
+	accent_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	accent_row.add_child(accent_label)
+	accent_picker = ColorPickerButton.new()
+	accent_picker.color = DEFAULT_ACCENT
+	accent_picker.custom_minimum_size = Vector2(73.0, 34.0)
+	accent_picker.color_changed.connect(_on_appearance_changed)
+	accent_row.add_child(accent_picker)
+
+	var background_row := HBoxContainer.new()
+	column.add_child(background_row)
+	var background_label := _label("Цвет фона", 13, Color(0.8, 0.9, 0.96))
+	background_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	background_row.add_child(background_label)
+	background_picker = ColorPickerButton.new()
+	background_picker.color = DEFAULT_BACKGROUND
+	background_picker.custom_minimum_size = Vector2(73.0, 34.0)
+	background_picker.color_changed.connect(_on_appearance_changed)
+	background_row.add_child(background_picker)
+
+	_add_appearance_slider(column, "spectrum_mix", "Реакция цвета на спектр", 0.0, 1.0, 0.6)
+	_add_appearance_slider(column, "glow_strength", "Свечение", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "outline_width", "Ширина контура", 0.5, 2.0, 1.0)
+	_add_appearance_slider(column, "shape_strength", "Деформация", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "bass_pulse_strength", "Пульс баса", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "bass_wave_strength", "Басовая волна", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "mid_wave_strength", "Средние волны", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "high_ripple_strength", "Высокая рябь", 0.0, 2.0, 1.0)
+	_add_appearance_slider(column, "beat_sensitivity", "Чуткость баса", 0.5, 2.0, 1.0)
+	_add_appearance_slider(column, "motion_speed", "Скорость движения", 0.25, 2.0, 1.0)
+	_add_appearance_slider(column, "rotation_speed", "Автовращение", 0.0, 2.0, 1.0)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_child(spacer)
+	appearance_save_label = _label("Настройки сохраняются автоматически.", 11, Color(0.61, 0.72, 0.81))
+	column.add_child(appearance_save_label)
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 8)
+	column.add_child(actions)
+	var reset_button := _button("Сбросить", false)
+	reset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reset_button.pressed.connect(_reset_appearance)
+	actions.add_child(reset_button)
+	var back_button := _button("Готово", true)
+	back_button.name = "DoneButton"
+	back_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	back_button.pressed.connect(_toggle_appearance_panel)
+	actions.add_child(back_button)
+
+
+func _add_appearance_slider(parent: VBoxContainer, key: String, title: String, minimum: float, maximum: float, initial: float) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
+	var title_label := _label(title, 12, Color(0.72, 0.85, 0.91))
+	title_label.custom_minimum_size.x = 153.0
+	row.add_child(title_label)
+	var slider := HSlider.new()
+	slider.min_value = minimum
+	slider.max_value = maximum
+	slider.step = 0.05
+	slider.value = initial
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(slider)
+	var value_label := _label("%.1f" % initial, 12, Color(0.93, 0.98, 1.0))
+	value_label.custom_minimum_size.x = 29.0
+	row.add_child(value_label)
+	appearance_sliders[key] = slider
+	slider.value_changed.connect(func(value: float) -> void:
+		value_label.text = "%.1f" % value
+		_apply_visual_settings()
+		_queue_save_appearance()
+	)
+
+
+func _on_appearance_changed(_color: Color) -> void:
+	_apply_visual_settings()
+	_queue_save_appearance()
+
+
+func _apply_visual_settings() -> void:
+	for material in _reactive_materials:
+		material.set_shader_parameter("accent_color", accent_picker.color)
+		for key in appearance_sliders:
+			if key != "rotation_speed" and key != "beat_sensitivity":
+				material.set_shader_parameter(key, appearance_sliders[key].value)
+	_auto_rotation_factor = appearance_sliders["rotation_speed"].value
+	audio_controller.set_bass_sensitivity(appearance_sliders["beat_sensitivity"].value)
+	var environment := ($WorldEnvironment as WorldEnvironment).environment
+	environment.background_color = background_picker.color
+
+
+func _reset_appearance() -> void:
+	accent_picker.color = DEFAULT_ACCENT
+	background_picker.color = DEFAULT_BACKGROUND
+	for key in appearance_sliders:
+		appearance_sliders[key].value = 0.6 if key == "spectrum_mix" else 1.0
+	_apply_visual_settings()
+	_queue_save_appearance()
+
+
+func _toggle_appearance_panel() -> void:
+	appearance_panel.visible = not appearance_panel.visible
+	source_panel.visible = not appearance_panel.visible
+	if not appearance_panel.visible and _appearance_save_timer.time_left > 0.0:
+		_appearance_save_timer.stop()
+		_save_appearance()
+
+
+func _queue_save_appearance() -> void:
+	if not _loading_appearance:
+		_appearance_save_timer.start()
+
+
+func _appearance_settings_path() -> String:
+	var project_root := ProjectSettings.globalize_path("res://")
+	if FileAccess.file_exists(project_root.path_join("project.godot")):
+		return project_root.path_join(".local").path_join(SETTINGS_FILENAME)
+	return OS.get_executable_path().get_base_dir().path_join(SETTINGS_FILENAME)
+
+
+func _load_appearance() -> void:
+	var settings := ConfigFile.new()
+	if settings.load(_appearance_settings_path()) != OK:
+		return
+	_loading_appearance = true
+	var accent: Variant = settings.get_value("appearance", "accent", DEFAULT_ACCENT)
+	var background: Variant = settings.get_value("appearance", "background", DEFAULT_BACKGROUND)
+	if accent is Color:
+		accent_picker.color = accent
+	if background is Color:
+		background_picker.color = background
+	for key in appearance_sliders:
+		var value: Variant = settings.get_value("appearance", key, appearance_sliders[key].value)
+		if value is float or value is int:
+			appearance_sliders[key].value = value
+	_loading_appearance = false
+
+
+func _save_appearance() -> void:
+	var settings := ConfigFile.new()
+	settings.set_value("appearance", "accent", accent_picker.color)
+	settings.set_value("appearance", "background", background_picker.color)
+	for key in appearance_sliders:
+		settings.set_value("appearance", key, appearance_sliders[key].value)
+	var path := _appearance_settings_path()
+	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	if error == OK:
+		error = settings.save(path)
+	if error != OK:
+		appearance_save_label.text = "Не удалось сохранить настройки."
+		appearance_save_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.55))
+	else:
+		appearance_save_label.text = "Настройки сохранены рядом с приложением."
 
 
 func _create_camera_panel(screen: Control) -> void:

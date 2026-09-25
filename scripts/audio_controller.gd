@@ -111,6 +111,14 @@ func get_bass_hit() -> float:
 	return _bass_hit
 
 
+func set_bass_sensitivity(value: float) -> void:
+	_bass_beat_detector.sensitivity = clampf(value, 0.5, 2.0)
+
+
+func get_bass_sensitivity() -> float:
+	return _bass_beat_detector.sensitivity
+
+
 func get_audio_level(delta: float) -> float:
 	var target := 0.0
 	if is_active() and _bus_index >= 0:

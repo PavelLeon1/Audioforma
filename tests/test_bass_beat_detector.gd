@@ -28,6 +28,13 @@ func _initialize() -> void:
 	if detector.update(db_to_linear(-20.0), 0.02, true) != 0.0:
 		_fail("После паузы детектор должен заново измерить фон")
 		return
+	detector.reset()
+	for frame in range(40):
+		detector.update(db_to_linear(-28.0), 0.02, true)
+	detector.sensitivity = 2.0
+	if detector.update(db_to_linear(-26.0), 0.02, true) <= 0.0:
+		_fail("Повышенная чувствительность должна замечать более слабый удар")
+		return
 	print("PASS: детектор басовых ударов")
 	quit(0)
 
