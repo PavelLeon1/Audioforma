@@ -25,8 +25,11 @@ func _initialize() -> void:
 	if attack.x <= 1.0 - release.x:
 		_fail("Атака должна быть быстрее спада")
 		return
-	if Mapper.normalize_peak(-60.0) != 0.0 or Mapper.normalize_peak(-6.0) != 1.0:
+	if Mapper.normalize_peak(-60.0) != 0.0 or Mapper.normalize_peak(0.0) != 1.0:
 		_fail("Пиковая громкость должна ограничиваться диапазоном 0–1")
+		return
+	if Mapper.normalize_peak(-6.0) >= 1.0 or Mapper.normalize_magnitude(0.1) >= 1.0:
+		_fail("Шкала должна сохранять запас для более громких треков")
 		return
 	if Mapper.normalize_peak(-30.0) <= Mapper.normalize_peak(-40.0):
 		_fail("Рост громкости должен увеличивать яркость")

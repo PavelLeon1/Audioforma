@@ -1,7 +1,7 @@
 extends RefCounted
 
 const FLOOR_DB := -66.0
-const CEILING_DB := -18.0
+const CEILING_DB := 0.0
 const ATTACK_SECONDS := 0.055
 const RELEASE_SECONDS := 0.22
 
@@ -22,7 +22,7 @@ static func smooth(current: Vector3, target: Vector3, delta: float) -> Vector3:
 
 
 static func normalize_peak(decibels: float) -> float:
-	return clampf((decibels + 60.0) / 54.0, 0.0, 1.0)
+	return clampf((decibels + 60.0) / 60.0, 0.0, 1.0)
 
 
 static func smooth_level(current: float, target: float, delta: float) -> float:

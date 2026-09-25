@@ -90,8 +90,18 @@ func _run() -> void:
 	if controller.source_name != "Спектральный этюд":
 		_fail("Не удалось вернуться к демофрагменту")
 		return
+	var demo_hits := 0
+	for frame in range(75):
+		await create_timer(0.04).timeout
+		controller.get_spectrum_analysis(0.04)
+		if controller.get_bass_hit() > 0.0:
+			demo_hits += 1
+	if demo_hits < 2:
+		_fail("Басовые удары демофрагмента не запускают волны")
+		return
+	print("DEMO BASS HITS: %d" % demo_hits)
 
-	print("PASS: загрузка WAV/MP3/OGG, спектр и общая громкость")
+	print("PASS: загрузка WAV/MP3/OGG, спектр, громкость и удары")
 	player.stop()
 	holder.queue_free()
 	await create_timer(0.3).timeout

@@ -2,3 +2,9 @@
 .local/
 dist/
 *.tmp
+/1.png
+/2.png
+/3.png
+/1.png.import
+/2.png.import
+/3.png.import

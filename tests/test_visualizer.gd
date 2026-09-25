@@ -33,6 +33,20 @@ func _run() -> void:
 		if material.get_shader_parameter("deformation_mode") != index or not scene.mode_buttons[index].button_pressed:
 			_fail("Режим %d не выбран в шейдере и интерфейсе" % index)
 			return
+	scene.motion_time = 1.25
+	scene._register_bass_hit(0.8)
+	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_a"), 1.25) or not is_equal_approx(material.get_shader_parameter("bass_hit_strength_a"), 0.8):
+		_fail("Басовый удар не передан в шейдер")
+		return
+	scene.motion_time = 1.65
+	scene._register_bass_hit(0.5)
+	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_b"), 1.65):
+		_fail("Следующий басовый удар должен запускать отдельную волну")
+		return
+	scene._reset_bass_waves()
+	if material.get_shader_parameter("bass_hit_strength_a") != 0.0 or material.get_shader_parameter("bass_hit_strength_b") != 0.0:
+		_fail("При смене трека старые волны должны исчезнуть")
+		return
 
 	scene.set_process(false)
 	var camera := scene.get_node("Camera3D") as Camera3D

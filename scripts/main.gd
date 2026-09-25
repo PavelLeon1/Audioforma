@@ -26,6 +26,7 @@ var orbit_yaw := 0.0
 var orbit_pitch := 0.0
 var motion_time := 0.0
 var deformation_mode := 0
+var _bass_wave_slot := 0
 
 
 func _ready() -> void:
@@ -33,6 +34,7 @@ func _ready() -> void:
 	_set_mode(0)
 	audio_controller.playback_changed.connect(_update_playback_interface)
 	audio_controller.source_changed.connect(_update_source_interface)
+	audio_controller.source_changed.connect(_reset_bass_waves)
 	_update_source_interface()
 	_update_playback_interface()
 
@@ -44,6 +46,9 @@ func _process(delta: float) -> void:
 	var bands := audio_controller.get_spectrum_analysis(delta)
 	var level := audio_controller.get_audio_level(delta)
 	motion_time += delta
+	var bass_hit := audio_controller.get_bass_hit()
+	if bass_hit > 0.0:
+		_register_bass_hit(bass_hit)
 	_apply_audio_state(bands, level)
 	for index in range(3):
 		spectrum_bars[index].value = bands[index] * 100.0
@@ -55,6 +60,20 @@ func _apply_audio_state(bands: Vector3, level: float) -> void:
 	orb_material.set_shader_parameter("high", bands.z)
 	orb_material.set_shader_parameter("level", level)
 	orb_material.set_shader_parameter("motion_time", motion_time)
+
+
+func _register_bass_hit(strength: float) -> void:
+	var suffix := "a" if _bass_wave_slot == 0 else "b"
+	orb_material.set_shader_parameter("bass_hit_time_" + suffix, motion_time)
+	orb_material.set_shader_parameter("bass_hit_strength_" + suffix, strength)
+	_bass_wave_slot = 1 - _bass_wave_slot
+
+
+func _reset_bass_waves() -> void:
+	_bass_wave_slot = 0
+	for suffix in ["a", "b"]:
+		orb_material.set_shader_parameter("bass_hit_time_" + suffix, -10.0)
+		orb_material.set_shader_parameter("bass_hit_strength_" + suffix, 0.0)
 
 
 func _set_mode(index: int) -> void:

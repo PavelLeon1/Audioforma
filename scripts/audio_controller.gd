@@ -5,6 +5,7 @@ signal playback_changed
 signal source_changed
 
 const SpectrumMapper = preload("res://scripts/spectrum_mapper.gd")
+const BassBeatDetector = preload("res://scripts/bass_beat_detector.gd")
 const DEMO_STREAM = preload("res://assets/audio/demo.wav")
 const BUS_NAME := "Audio Analysis"
 const INVALID_AUDIO_MESSAGE := "Не удалось прочитать аудиофайл. Проверьте его формат."
@@ -18,6 +19,8 @@ var _bus_index := -1
 var _analyzer: AudioEffectSpectrumAnalyzerInstance
 var _spectrum := Vector3.ZERO
 var _level := 0.0
+var _bass_beat_detector = BassBeatDetector.new()
+var _bass_hit := 0.0
 
 
 func _ready() -> void:
@@ -85,6 +88,7 @@ func is_active() -> bool:
 
 func get_spectrum_analysis(delta: float) -> Vector3:
 	var target := Vector3.ZERO
+	_bass_hit = 0.0
 	if is_active():
 		if _analyzer == null and _bus_index >= 0:
 			_analyzer = AudioServer.get_bus_effect_instance(_bus_index, 0) as AudioEffectSpectrumAnalyzerInstance
@@ -94,8 +98,17 @@ func get_spectrum_analysis(delta: float) -> Vector3:
 				_read_band(250.0, 2000.0),
 				_read_band(2000.0, 8000.0)
 			)
+			_bass_hit = _bass_beat_detector.update(_read_magnitude(20.0, 120.0), delta, true)
+		else:
+			_bass_beat_detector.reset()
+	else:
+		_bass_beat_detector.reset()
 	_spectrum = SpectrumMapper.smooth(_spectrum, target, delta)
 	return _spectrum
+
+
+func get_bass_hit() -> float:
+	return _bass_hit
 
 
 func get_audio_level(delta: float) -> float:
@@ -109,10 +122,14 @@ func get_audio_level(delta: float) -> float:
 
 
 func _read_band(from_hz: float, to_hz: float) -> float:
+	return SpectrumMapper.normalize_magnitude(_read_magnitude(from_hz, to_hz))
+
+
+func _read_magnitude(from_hz: float, to_hz: float) -> float:
 	var stereo := _analyzer.get_magnitude_for_frequency_range(
 		from_hz, to_hz, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX
 	)
-	return SpectrumMapper.normalize_magnitude(maxf(stereo.x, stereo.y))
+	return maxf(stereo.x, stereo.y)
 
 
 func _prepare_audio_bus() -> void:
@@ -141,6 +158,8 @@ func _set_stream(stream: AudioStream, name: String, format: String, autoplay: bo
 	source_description = "%s · %d с" % [format, seconds]
 	_spectrum = Vector3.ZERO
 	_level = 0.0
+	_bass_beat_detector.reset()
+	_bass_hit = 0.0
 	if autoplay:
 		player.play()
 	source_changed.emit()
