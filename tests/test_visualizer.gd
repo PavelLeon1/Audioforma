@@ -131,6 +131,59 @@ func _run() -> void:
 	if not scene.orb.rotation.is_zero_approx() or not is_equal_approx(camera.position.z, 7.0) or scene.zoom_label.text != "100 %":
 		_fail("Сброс не восстановил исходный ракурс")
 		return
+	var focus_button := scene.source_panel.find_child("FocusButton", true, false) as Button
+	if focus_button == null:
+		_fail("Кнопка режима просмотра отсутствует")
+		return
+	focus_button.pressed.emit()
+	if not scene.focus_mode or scene.interface_layer.visible:
+		_fail("Режим просмотра должен скрывать весь интерфейс")
+		return
+	scene.audio_controller.toggle_playback()
+	if not scene.audio_controller.is_active():
+		_fail("Звук должен запускаться без интерфейса")
+		return
+	await create_timer(0.5).timeout
+	if absf(scene.orb.position.x) > 0.02 or camera.position.z > 5.91:
+		_fail("В режиме просмотра сфера должна быть по центру и ближе к камере")
+		return
+	if not scene.audio_controller.is_active():
+		_fail("Скрытие панелей не должно останавливать звук")
+		return
+	mouse_down.position = Vector2(100.0, 350.0)
+	scene._unhandled_input(mouse_down)
+	motion.relative = Vector2(90.0, 0.0)
+	scene._unhandled_input(motion)
+	if scene.orb.rotation.is_zero_approx():
+		_fail("Без панелей вращение должно работать в любой части окна")
+		return
+	scene._input(mouse_up)
+	var reset_key := InputEventKey.new()
+	reset_key.keycode = KEY_R
+	reset_key.pressed = true
+	scene._unhandled_input(reset_key)
+	if not scene.orb.rotation.is_zero_approx() or not is_equal_approx(camera.position.z, 5.9):
+		_fail("Сброс в режиме просмотра должен оставить сферу по центру")
+		return
+	var escape_key := InputEventKey.new()
+	escape_key.keycode = KEY_ESCAPE
+	escape_key.pressed = true
+	scene._unhandled_input(escape_key)
+	await create_timer(0.5).timeout
+	if scene.focus_mode or not scene.interface_layer.visible or absf(scene.orb.position.x - 1.55) > 0.02 or not is_equal_approx(camera.position.z, 7.0):
+		_fail("Esc должен вернуть панели и прежний ракурс")
+		return
+	var focus_key := InputEventKey.new()
+	focus_key.keycode = KEY_F
+	focus_key.pressed = true
+	scene._unhandled_input(focus_key)
+	if not scene.focus_mode:
+		_fail("Клавиша F должна включать режим просмотра")
+		return
+	scene._unhandled_input(focus_key)
+	if scene.focus_mode:
+		_fail("Клавиша F должна возвращать интерфейс")
+		return
 
 	var original_stream: AudioStream = scene.audio_controller.player.stream
 	scene._on_file_selected("unsupported.txt")
@@ -160,7 +213,7 @@ func _run() -> void:
 		_fail("Пауза не отражена в интерфейсе")
 		return
 
-	print("PASS: шейдер, режимы, ракурс и сообщения о загрузке")
+	print("PASS: шейдер, настройки, режим просмотра, ракурс и загрузка")
 	scene.audio_controller.player.stop()
 	scene.queue_free()
 	await create_timer(0.3).timeout

@@ -1,6 +1,8 @@
 extends Node3D
 
 const DEFAULT_CAMERA_DISTANCE := 7.0
+const FOCUS_CAMERA_DISTANCE := 5.9
+const DEFAULT_ORB_POSITION := Vector3(1.55, 0.0, 0.0)
 const MIN_CAMERA_DISTANCE := 5.6
 const MAX_CAMERA_DISTANCE := 9.0
 const CAMERA_STEP := 0.5
@@ -36,6 +38,10 @@ var appearance_save_label: Label
 var _appearance_save_timer: Timer
 var _loading_appearance := false
 var _auto_rotation_factor := 1.0
+var interface_layer: CanvasLayer
+var focus_mode := false
+var _camera_distance_before_focus := DEFAULT_CAMERA_DISTANCE
+var _focus_tween: Tween
 var dragging := false
 var orbit_yaw := 0.0
 var orbit_pitch := 0.0
@@ -123,7 +129,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var click := event as InputEventMouseButton
 		if click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
-			dragging = click.position.x > 420.0
+			dragging = focus_mode or click.position.x > 420.0
 		elif click.pressed and click.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_zoom_camera(-1.0)
 		elif click.pressed and click.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -135,11 +141,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		_update_orbit()
 	elif event is InputEventKey:
 		var key := event as InputEventKey
-		if key.pressed and not key.echo and key.keycode == KEY_SPACE:
+		if key.pressed and not key.echo and key.keycode == KEY_F:
+			_toggle_focus_mode()
+		elif key.pressed and not key.echo and key.keycode == KEY_ESCAPE and focus_mode:
+			_set_focus_mode(false)
+		elif key.pressed and not key.echo and key.keycode == KEY_SPACE:
 			audio_controller.toggle_playback()
 		elif key.pressed and not key.echo and key.keycode == KEY_R:
 			_reset_view()
-		elif key.pressed and not key.echo and key.keycode == KEY_S:
+		elif key.pressed and not key.echo and key.keycode == KEY_S and not focus_mode:
 			_toggle_appearance_panel()
 		elif key.pressed and not key.echo and key.keycode >= KEY_1 and key.keycode <= KEY_4:
 			_set_mode(key.keycode - KEY_1)
@@ -158,13 +168,42 @@ func _reset_view() -> void:
 	dragging = false
 	orbit_yaw = 0.0
 	orbit_pitch = 0.0
-	camera.position.z = DEFAULT_CAMERA_DISTANCE
+	camera.position.z = FOCUS_CAMERA_DISTANCE if focus_mode else DEFAULT_CAMERA_DISTANCE
 	_update_orbit()
-	zoom_label.text = "100 %"
+	zoom_label.text = "%d %%" % roundi(DEFAULT_CAMERA_DISTANCE / camera.position.z * 100.0)
+
+
+func _toggle_focus_mode() -> void:
+	_set_focus_mode(not focus_mode)
+
+
+func _set_focus_mode(enabled: bool) -> void:
+	if focus_mode == enabled:
+		return
+	if _focus_tween != null and _focus_tween.is_running():
+		_focus_tween.kill()
+	focus_mode = enabled
+	dragging = false
+	if enabled:
+		_camera_distance_before_focus = camera.position.z
+		file_dialog.hide()
+		appearance_panel.visible = false
+		source_panel.visible = true
+		interface_layer.visible = false
+		camera.position.z = minf(camera.position.z, FOCUS_CAMERA_DISTANCE)
+	else:
+		interface_layer.visible = true
+		camera.position.z = _camera_distance_before_focus
+	zoom_label.text = "%d %%" % roundi(DEFAULT_CAMERA_DISTANCE / camera.position.z * 100.0)
+	_focus_tween = create_tween()
+	_focus_tween.set_trans(Tween.TRANS_CUBIC)
+	_focus_tween.set_ease(Tween.EASE_OUT)
+	_focus_tween.tween_property(orb, "position", Vector3.ZERO if enabled else DEFAULT_ORB_POSITION, 0.4)
 
 
 func _create_interface() -> void:
 	var layer := CanvasLayer.new()
+	interface_layer = layer
 	add_child(layer)
 
 	var screen := Control.new()
@@ -245,11 +284,21 @@ func _create_interface() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(spacer)
+	var view_actions := HBoxContainer.new()
+	view_actions.add_theme_constant_override("separation", 8)
+	column.add_child(view_actions)
 	var appearance_button := _button("Настроить вид", false)
 	appearance_button.name = "AppearanceButton"
 	appearance_button.tooltip_text = "S — открыть настройки внешнего вида"
+	appearance_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	appearance_button.pressed.connect(_toggle_appearance_panel)
-	column.add_child(appearance_button)
+	view_actions.add_child(appearance_button)
+	var focus_button := _button("Просмотр · F", false)
+	focus_button.name = "FocusButton"
+	focus_button.tooltip_text = "Скрыть панели. F или Esc — вернуть управление."
+	focus_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	focus_button.pressed.connect(_toggle_focus_mode)
+	view_actions.add_child(focus_button)
 	_create_appearance_panel(screen)
 
 	var corner := _label("3D  /  AUDIO", 12, Color(0.46, 0.68, 0.79))
