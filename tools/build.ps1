@@ -43,7 +43,7 @@ try {
     if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://shaders/halo.gdshader' -Quiet)) {
         throw 'Шейдер светящегося контура отсутствует в сборке.'
     }
-    if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|AGENT.md' -Quiet) {
+    if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|bassboosted\.mp4|AGENT.md' -Quiet) {
         throw 'Сборка содержит файлы разработки.'
     }
     if (-not (Test-Path -LiteralPath $output -PathType Leaf) -or (Get-Item -LiteralPath $output).Length -lt 100000000) {

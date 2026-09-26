@@ -38,19 +38,36 @@ func _run() -> void:
 			_fail("Режим %d не выбран в шейдере и интерфейсе" % index)
 			return
 	scene.motion_time = 1.25
+	scene.wave_direction_picker.selected = 2
+	scene.orb.rotation.y = PI / 2.0
 	scene._register_bass_hit(0.8)
 	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_a"), 1.25) or not is_equal_approx(material.get_shader_parameter("bass_hit_strength_a"), 0.8) or not is_equal_approx(halo_material.get_shader_parameter("bass_hit_strength_a"), 0.8):
 		_fail("Басовый удар не передан в шейдер")
 		return
+	var expected_origin: Vector3 = (scene.orb.global_transform.basis.inverse() * Vector3.LEFT).normalized()
+	if (material.get_shader_parameter("bass_hit_origin_a") as Vector3).distance_to(expected_origin) > 0.01 or material.get_shader_parameter("bass_hit_paired_a") != 0.0:
+		_fail("Направление басовой волны не учитывает поворот сферы")
+		return
+	scene._update_impact(0.016)
+	scene._apply_audio_state(Vector3.ZERO, 0.0)
+	if material.get_shader_parameter("beat_pulse") <= 0.0 or Vector2(scene.camera.position.x, scene.camera.position.y).length() <= 0.001:
+		_fail("Удар не увеличил сферу или не встряхнул камеру")
+		return
+	scene._update_impact(1.0)
+	if Vector2(scene.camera.position.x, scene.camera.position.y).length() > 0.001 or scene._beat_pulse > 0.001:
+		_fail("Пульс и тряска не затухли")
+		return
 	scene.motion_time = 1.65
+	scene.wave_direction_picker.selected = 4
 	scene._register_bass_hit(0.5)
-	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_b"), 1.65):
+	if not is_equal_approx(material.get_shader_parameter("bass_hit_time_b"), 1.65) or material.get_shader_parameter("bass_hit_paired_b") != 1.0:
 		_fail("Следующий басовый удар должен запускать отдельную волну")
 		return
 	scene._reset_bass_waves()
 	if material.get_shader_parameter("bass_hit_strength_a") != 0.0 or material.get_shader_parameter("bass_hit_strength_b") != 0.0 or halo_material.get_shader_parameter("bass_hit_strength_a") != 0.0:
 		_fail("При смене трека старые волны должны исчезнуть")
 		return
+	scene.orb.rotation = Vector3.ZERO
 
 	scene._loading_appearance = true
 	scene._toggle_appearance_panel()
@@ -67,16 +84,22 @@ func _run() -> void:
 	scene.appearance_sliders["glow_strength"].value = 1.4
 	scene.appearance_sliders["rotation_speed"].value = 0.0
 	scene.appearance_sliders["beat_sensitivity"].value = 1.5
+	scene.appearance_sliders["beat_pulse_strength"].value = 1.7
+	scene.appearance_sliders["shake_strength"].value = 0.0
+	scene.wave_direction_picker.selected = 1
 	scene._apply_visual_settings()
 	for visual_material in [material, halo_material]:
 		if visual_material.get_shader_parameter("accent_color") != scene.accent_picker.color or not is_equal_approx(visual_material.get_shader_parameter("glow_strength"), 1.4):
 			_fail("Настройки цвета и свечения не переданы обоим слоям")
 			return
+		if not is_equal_approx(visual_material.get_shader_parameter("beat_pulse_strength"), 1.7):
+			_fail("Сила роста сферы не передана обоим слоям")
+			return
 	if (scene.get_node("WorldEnvironment") as WorldEnvironment).environment.background_color != scene.background_picker.color or scene._auto_rotation_factor != 0.0 or not is_equal_approx(scene.audio_controller.get_bass_sensitivity(), 1.5):
 		_fail("Настройки фона, автовращения и чувствительности не применились")
 		return
 	scene._reset_appearance()
-	if not is_equal_approx(material.get_shader_parameter("glow_strength"), 1.0):
+	if not is_equal_approx(material.get_shader_parameter("glow_strength"), 1.0) or scene.wave_direction_picker.selected != 4 or not is_equal_approx(scene.appearance_sliders["shake_strength"].value, 1.0):
 		_fail("Сброс настроек не восстановил свечение")
 		return
 	scene._toggle_appearance_panel()
@@ -186,6 +209,13 @@ func _run() -> void:
 		return
 
 	var original_stream: AudioStream = scene.audio_controller.player.stream
+	if not scene.file_dialog.use_native_dialog or scene.file_dialog.filters[0].find("*.wav") < 0:
+		_fail("Выбор аудио не использует системный диалог с общим фильтром")
+		return
+	scene._on_files_dropped(PackedStringArray(["unsupported.txt"]))
+	if scene.playback_label.text.find("Перетащите файл") < 0:
+		_fail("Неподдерживаемое перетаскивание не показало подсказку")
+		return
 	scene._on_file_selected("unsupported.txt")
 	if scene.playback_label.text.find("MP3") < 0 or scene.audio_controller.player.stream != original_stream:
 		_fail("Неподдерживаемый файл не показал понятную ошибку")
@@ -203,9 +233,12 @@ func _run() -> void:
 		_fail("Повреждённый WAV не показал ошибку или заменил текущий звук")
 		return
 	var valid_path := ProjectSettings.globalize_path("res://tests/fixtures/800.wav")
-	scene._on_file_selected(valid_path)
+	scene._on_files_dropped(PackedStringArray(["unsupported.txt", valid_path]))
 	if scene.playback_label.text != "Звук воспроизводится":
 		_fail("Успешная загрузка не очистила ошибку")
+		return
+	if scene.file_dialog.current_dir != valid_path.get_base_dir():
+		_fail("Диалог не запомнил каталог последнего аудиофайла")
 		return
 	await process_frame
 	scene.audio_controller.toggle_playback()

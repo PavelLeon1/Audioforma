@@ -10,6 +10,7 @@ const MAX_PITCH := 1.15
 const DEFAULT_ACCENT := Color(0.76, 0.16, 0.92)
 const DEFAULT_BACKGROUND := Color(0.024, 0.035, 0.069)
 const SETTINGS_FILENAME := "Audioforma.ini"
+const DEFAULT_WAVE_DIRECTION := 4
 
 @onready var orb: MeshInstance3D = $Orb
 @onready var camera: Camera3D = $Camera3D
@@ -34,6 +35,7 @@ var appearance_panel: PanelContainer
 var accent_picker: ColorPickerButton
 var background_picker: ColorPickerButton
 var appearance_sliders: Dictionary = {}
+var wave_direction_picker: OptionButton
 var appearance_save_label: Label
 var _appearance_save_timer: Timer
 var _loading_appearance := false
@@ -48,6 +50,8 @@ var orbit_pitch := 0.0
 var motion_time := 0.0
 var deformation_mode := 0
 var _bass_wave_slot := 0
+var _beat_pulse := 0.0
+var _shake_energy := 0.0
 
 
 func _ready() -> void:
@@ -58,6 +62,7 @@ func _ready() -> void:
 	_appearance_save_timer.timeout.connect(_save_appearance)
 	add_child(_appearance_save_timer)
 	_create_interface()
+	get_window().files_dropped.connect(_on_files_dropped)
 	_set_mode(0)
 	_load_appearance()
 	_apply_visual_settings()
@@ -78,6 +83,7 @@ func _process(delta: float) -> void:
 	var bass_hit := audio_controller.get_bass_hit()
 	if bass_hit > 0.0:
 		_register_bass_hit(bass_hit)
+	_update_impact(delta)
 	_apply_audio_state(bands, level)
 	for index in range(3):
 		spectrum_bars[index].value = bands[index] * 100.0
@@ -90,22 +96,53 @@ func _apply_audio_state(bands: Vector3, level: float) -> void:
 		material.set_shader_parameter("high", bands.z)
 		material.set_shader_parameter("level", level)
 		material.set_shader_parameter("motion_time", motion_time)
+		material.set_shader_parameter("beat_pulse", _beat_pulse)
 
 
 func _register_bass_hit(strength: float) -> void:
 	var suffix := "a" if _bass_wave_slot == 0 else "b"
+	var direction_index := wave_direction_picker.selected
+	if direction_index == 5:
+		direction_index = randi_range(0, 4)
+	var world_origin := Vector3.UP
+	match direction_index:
+		1:
+			world_origin = Vector3.DOWN
+		2:
+			world_origin = Vector3.LEFT
+		3, 4:
+			world_origin = Vector3.RIGHT
+	var local_origin := (orb.global_transform.basis.inverse() * world_origin).normalized()
 	for material in _reactive_materials:
 		material.set_shader_parameter("bass_hit_time_" + suffix, motion_time)
 		material.set_shader_parameter("bass_hit_strength_" + suffix, strength)
+		material.set_shader_parameter("bass_hit_origin_" + suffix, local_origin)
+		material.set_shader_parameter("bass_hit_paired_" + suffix, 1.0 if direction_index == 4 else 0.0)
+	_beat_pulse = maxf(_beat_pulse, strength)
+	_shake_energy = maxf(_shake_energy, strength)
 	_bass_wave_slot = 1 - _bass_wave_slot
+
+
+func _update_impact(delta: float) -> void:
+	_beat_pulse = maxf(0.0, _beat_pulse - delta * 4.5)
+	_shake_energy = maxf(0.0, _shake_energy - delta * 6.0)
+	var amplitude: float = 0.12 * _shake_energy * appearance_sliders["shake_strength"].value
+	camera.position.x = sin(motion_time * 71.0) * amplitude
+	camera.position.y = sin(motion_time * 113.0 + 0.8) * amplitude * 0.75
 
 
 func _reset_bass_waves() -> void:
 	_bass_wave_slot = 0
+	_beat_pulse = 0.0
+	_shake_energy = 0.0
+	camera.position.x = 0.0
+	camera.position.y = 0.0
 	for material in _reactive_materials:
 		for suffix in ["a", "b"]:
 			material.set_shader_parameter("bass_hit_time_" + suffix, -10.0)
 			material.set_shader_parameter("bass_hit_strength_" + suffix, 0.0)
+			material.set_shader_parameter("bass_hit_paired_" + suffix, 0.0)
+		material.set_shader_parameter("beat_pulse", 0.0)
 
 
 func _set_mode(index: int) -> void:
@@ -169,6 +206,9 @@ func _reset_view() -> void:
 	orbit_yaw = 0.0
 	orbit_pitch = 0.0
 	camera.position.z = FOCUS_CAMERA_DISTANCE if focus_mode else DEFAULT_CAMERA_DISTANCE
+	_shake_energy = 0.0
+	camera.position.x = 0.0
+	camera.position.y = 0.0
 	_update_orbit()
 	zoom_label.text = "%d %%" % roundi(DEFAULT_CAMERA_DISTANCE / camera.position.z * 100.0)
 
@@ -246,7 +286,7 @@ func _create_interface() -> void:
 	var source_buttons := HBoxContainer.new()
 	source_buttons.add_theme_constant_override("separation", 9)
 	column.add_child(source_buttons)
-	var open_button := _button("Выбрать файл", false)
+	var open_button := _button("Открыть аудио", false)
 	open_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	open_button.pressed.connect(_show_file_dialog)
 	source_buttons.add_child(open_button)
@@ -353,7 +393,8 @@ func _create_interface() -> void:
 	file_dialog.title = "Выберите аудиофайл"
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-	file_dialog.filters = PackedStringArray(["*.mp3 ; MP3", "*.wav ; WAV", "*.ogg ; OGG Vorbis"])
+	file_dialog.use_native_dialog = true
+	file_dialog.filters = PackedStringArray(["*.mp3,*.wav,*.ogg ; Аудиофайлы", "*.mp3 ; MP3", "*.wav ; WAV", "*.ogg ; OGG Vorbis"])
 	file_dialog.file_selected.connect(_on_file_selected)
 	add_child(file_dialog)
 
@@ -380,9 +421,17 @@ func _create_appearance_panel(screen: Control) -> void:
 	column.add_child(_label("Свет и форма", 27, Color(0.94, 0.98, 1.0)))
 	column.add_child(_label("Изменения видны во время воспроизведения.", 12, Color(0.61, 0.72, 0.81)))
 	column.add_child(HSeparator.new())
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	column.add_child(scroll)
+	var form := VBoxContainer.new()
+	form.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	form.add_theme_constant_override("separation", 7)
+	scroll.add_child(form)
 
 	var accent_row := HBoxContainer.new()
-	column.add_child(accent_row)
+	form.add_child(accent_row)
 	var accent_label := _label("Цвет контура", 13, Color(0.8, 0.9, 0.96))
 	accent_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	accent_row.add_child(accent_label)
@@ -393,7 +442,7 @@ func _create_appearance_panel(screen: Control) -> void:
 	accent_row.add_child(accent_picker)
 
 	var background_row := HBoxContainer.new()
-	column.add_child(background_row)
+	form.add_child(background_row)
 	var background_label := _label("Цвет фона", 13, Color(0.8, 0.9, 0.96))
 	background_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	background_row.add_child(background_label)
@@ -403,21 +452,32 @@ func _create_appearance_panel(screen: Control) -> void:
 	background_picker.color_changed.connect(_on_appearance_changed)
 	background_row.add_child(background_picker)
 
-	_add_appearance_slider(column, "spectrum_mix", "Реакция цвета на спектр", 0.0, 1.0, 0.6)
-	_add_appearance_slider(column, "glow_strength", "Свечение", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "outline_width", "Ширина контура", 0.5, 2.0, 1.0)
-	_add_appearance_slider(column, "shape_strength", "Деформация", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "bass_pulse_strength", "Пульс баса", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "bass_wave_strength", "Басовая волна", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "mid_wave_strength", "Средние волны", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "high_ripple_strength", "Высокая рябь", 0.0, 2.0, 1.0)
-	_add_appearance_slider(column, "beat_sensitivity", "Чуткость баса", 0.5, 2.0, 1.0)
-	_add_appearance_slider(column, "motion_speed", "Скорость движения", 0.25, 2.0, 1.0)
-	_add_appearance_slider(column, "rotation_speed", "Автовращение", 0.0, 2.0, 1.0)
-
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(spacer)
+	_add_appearance_slider(form, "spectrum_mix", "Реакция цвета на спектр", 0.0, 1.0, 0.6)
+	_add_appearance_slider(form, "glow_strength", "Свечение", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "outline_width", "Ширина контура", 0.5, 2.0, 1.0)
+	_add_appearance_slider(form, "shape_strength", "Деформация", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "bass_pulse_strength", "Пульс баса", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "beat_pulse_strength", "Рост на ударе", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "bass_wave_strength", "Басовая волна", 0.0, 2.0, 1.0)
+	var direction_row := HBoxContainer.new()
+	direction_row.add_theme_constant_override("separation", 8)
+	form.add_child(direction_row)
+	var direction_label := _label("Направление волны", 12, Color(0.72, 0.85, 0.91))
+	direction_label.custom_minimum_size.x = 153.0
+	direction_row.add_child(direction_label)
+	wave_direction_picker = OptionButton.new()
+	wave_direction_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for option in ["Сверху вниз", "Снизу вверх", "Слева направо", "Справа налево", "В стороны", "Случайно"]:
+		wave_direction_picker.add_item(option)
+	wave_direction_picker.selected = DEFAULT_WAVE_DIRECTION
+	wave_direction_picker.item_selected.connect(func(_index: int) -> void: _queue_save_appearance())
+	direction_row.add_child(wave_direction_picker)
+	_add_appearance_slider(form, "mid_wave_strength", "Средние волны", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "high_ripple_strength", "Высокая рябь", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "beat_sensitivity", "Чуткость баса", 0.5, 2.0, 1.0)
+	_add_appearance_slider(form, "shake_strength", "Тряска камеры", 0.0, 2.0, 1.0)
+	_add_appearance_slider(form, "motion_speed", "Скорость движения", 0.25, 2.0, 1.0)
+	_add_appearance_slider(form, "rotation_speed", "Автовращение", 0.0, 2.0, 1.0)
 	appearance_save_label = _label("Настройки сохраняются автоматически.", 11, Color(0.61, 0.72, 0.81))
 	column.add_child(appearance_save_label)
 	var actions := HBoxContainer.new()
@@ -468,7 +528,7 @@ func _apply_visual_settings() -> void:
 	for material in _reactive_materials:
 		material.set_shader_parameter("accent_color", accent_picker.color)
 		for key in appearance_sliders:
-			if key != "rotation_speed" and key != "beat_sensitivity":
+			if key != "rotation_speed" and key != "beat_sensitivity" and key != "shake_strength":
 				material.set_shader_parameter(key, appearance_sliders[key].value)
 	_auto_rotation_factor = appearance_sliders["rotation_speed"].value
 	audio_controller.set_bass_sensitivity(appearance_sliders["beat_sensitivity"].value)
@@ -481,6 +541,7 @@ func _reset_appearance() -> void:
 	background_picker.color = DEFAULT_BACKGROUND
 	for key in appearance_sliders:
 		appearance_sliders[key].value = 0.6 if key == "spectrum_mix" else 1.0
+	wave_direction_picker.selected = DEFAULT_WAVE_DIRECTION
 	_apply_visual_settings()
 	_queue_save_appearance()
 
@@ -520,6 +581,9 @@ func _load_appearance() -> void:
 		var value: Variant = settings.get_value("appearance", key, appearance_sliders[key].value)
 		if value is float or value is int:
 			appearance_sliders[key].value = value
+	var direction: Variant = settings.get_value("appearance", "wave_direction", DEFAULT_WAVE_DIRECTION)
+	if direction is int and direction >= 0 and direction < wave_direction_picker.item_count:
+		wave_direction_picker.selected = direction
 	_loading_appearance = false
 
 
@@ -529,6 +593,7 @@ func _save_appearance() -> void:
 	settings.set_value("appearance", "background", background_picker.color)
 	for key in appearance_sliders:
 		settings.set_value("appearance", key, appearance_sliders[key].value)
+	settings.set_value("appearance", "wave_direction", wave_direction_picker.selected)
 	var path := _appearance_settings_path()
 	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	if error == OK:
@@ -648,6 +713,16 @@ func _show_file_dialog() -> void:
 func _on_file_selected(path: String) -> void:
 	if not audio_controller.load_file(path):
 		_set_status(audio_controller.last_error, true)
+	else:
+		file_dialog.current_dir = path.get_base_dir()
+
+
+func _on_files_dropped(files: PackedStringArray) -> void:
+	for path in files:
+		if path.get_extension().to_lower() in ["mp3", "wav", "ogg"]:
+			_on_file_selected(path)
+			return
+	_set_status("Перетащите файл MP3, WAV или OGG Vorbis.", true)
 
 
 func _update_source_interface() -> void:
