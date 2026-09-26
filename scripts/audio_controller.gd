@@ -21,10 +21,12 @@ var _spectrum := Vector3.ZERO
 var _level := 0.0
 var _bass_beat_detector = BassBeatDetector.new()
 var _bass_hit := 0.0
+var _volume_percent := 100.0
 
 
 func _ready() -> void:
 	_prepare_audio_bus()
+	set_volume_percent(_volume_percent)
 	player.finished.connect(_on_playback_finished)
 	if player.stream == null:
 		player.stream = DEMO_STREAM
@@ -117,6 +119,17 @@ func set_bass_sensitivity(value: float) -> void:
 
 func get_bass_sensitivity() -> float:
 	return _bass_beat_detector.sensitivity
+
+
+func set_volume_percent(value: float) -> void:
+	_volume_percent = clampf(value, 0.0, 100.0)
+	var master_index := AudioServer.get_bus_index("Master")
+	if master_index >= 0:
+		AudioServer.set_bus_volume_linear(master_index, _volume_percent / 100.0)
+
+
+func get_volume_percent() -> float:
+	return _volume_percent
 
 
 func get_audio_level(delta: float) -> float:

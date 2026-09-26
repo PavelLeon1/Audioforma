@@ -21,6 +21,8 @@ const DEFAULT_WAVE_DIRECTION := 4
 var _reactive_materials: Array[ShaderMaterial] = []
 
 var play_button: Button
+var volume_slider: HSlider
+var volume_value_label: Label
 var playback_label: Label
 var status_panel: PanelContainer
 var source_name_label: Label
@@ -184,6 +186,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_set_focus_mode(false)
 		elif key.pressed and not key.echo and key.keycode == KEY_SPACE:
 			audio_controller.toggle_playback()
+		elif key.pressed and not key.echo and key.keycode == KEY_UP:
+			_change_volume(10.0)
+		elif key.pressed and not key.echo and key.keycode == KEY_DOWN:
+			_change_volume(-10.0)
 		elif key.pressed and not key.echo and key.keycode == KEY_R:
 			_reset_view()
 		elif key.pressed and not key.echo and key.keycode == KEY_S and not focus_mode:
@@ -267,12 +273,10 @@ func _create_interface() -> void:
 	panel.add_child(padding)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 11)
+	column.add_theme_constant_override("separation", 9)
 	padding.add_child(column)
 
-	column.add_child(_label("ПРОГРАММИРОВАНИЕ ГРАФИКИ И ЗВУКА", 11, Color(0.42, 0.78, 0.9)))
 	column.add_child(_label("АУДИО\nФОРМА", 40, Color(0.94, 0.98, 1.0)))
-	column.add_child(_label("Музыка обретает форму в трёхмерном пространстве.", 15, Color(0.61, 0.72, 0.81)))
 	column.add_child(HSeparator.new())
 
 	column.add_child(_label("ИСТОЧНИК ЗВУКА", 12, Color(0.42, 0.78, 0.9)))
@@ -299,6 +303,39 @@ func _create_interface() -> void:
 	play_button.custom_minimum_size.y = 50.0
 	play_button.pressed.connect(audio_controller.toggle_playback)
 	column.add_child(play_button)
+	var volume_row := HBoxContainer.new()
+	volume_row.add_theme_constant_override("separation", 6)
+	column.add_child(volume_row)
+	var volume_title := _label("ГРОМКОСТЬ", 11, Color(0.42, 0.78, 0.9))
+	volume_title.custom_minimum_size.x = 76.0
+	volume_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	volume_row.add_child(volume_title)
+	var quieter_button := _button("−", false)
+	quieter_button.name = "VolumeDownButton"
+	quieter_button.custom_minimum_size = Vector2(30.0, 30.0)
+	quieter_button.add_theme_font_size_override("font_size", 14)
+	quieter_button.pressed.connect(_change_volume.bind(-10.0))
+	volume_row.add_child(quieter_button)
+	volume_slider = HSlider.new()
+	volume_slider.min_value = 0.0
+	volume_slider.max_value = 100.0
+	volume_slider.step = 1.0
+	volume_slider.value = 100.0
+	volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	volume_slider.tooltip_text = "↑/↓ — изменить громкость, в том числе в режиме просмотра"
+	volume_slider.value_changed.connect(_on_volume_changed)
+	volume_row.add_child(volume_slider)
+	var louder_button := _button("+", false)
+	louder_button.name = "VolumeUpButton"
+	louder_button.custom_minimum_size = Vector2(30.0, 30.0)
+	louder_button.add_theme_font_size_override("font_size", 14)
+	louder_button.pressed.connect(_change_volume.bind(10.0))
+	volume_row.add_child(louder_button)
+	volume_value_label = _label("100 %", 12, Color(0.92, 0.97, 1.0))
+	volume_value_label.custom_minimum_size.x = 42.0
+	volume_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	volume_value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	volume_row.add_child(volume_value_label)
 
 	status_panel = PanelContainer.new()
 	status_panel.custom_minimum_size.y = 44.0
@@ -341,15 +378,6 @@ func _create_interface() -> void:
 	view_actions.add_child(focus_button)
 	_create_appearance_panel(screen)
 
-	var corner := _label("3D  /  AUDIO", 12, Color(0.46, 0.68, 0.79))
-	corner.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	screen.add_child(corner)
-	corner.anchor_left = 1.0
-	corner.anchor_right = 1.0
-	corner.offset_left = -200.0
-	corner.offset_right = -28.0
-	corner.offset_top = 32.0
-	corner.offset_bottom = 60.0
 	_create_camera_panel(screen)
 
 	var mode_panel := PanelContainer.new()
@@ -577,6 +605,9 @@ func _load_appearance() -> void:
 		accent_picker.color = accent
 	if background is Color:
 		background_picker.color = background
+	var volume: Variant = settings.get_value("audio", "volume_percent", 100.0)
+	if volume is float or volume is int:
+		volume_slider.value = clampf(volume, 0.0, 100.0)
 	for key in appearance_sliders:
 		var value: Variant = settings.get_value("appearance", key, appearance_sliders[key].value)
 		if value is float or value is int:
@@ -594,6 +625,7 @@ func _save_appearance() -> void:
 	for key in appearance_sliders:
 		settings.set_value("appearance", key, appearance_sliders[key].value)
 	settings.set_value("appearance", "wave_direction", wave_direction_picker.selected)
+	settings.set_value("audio", "volume_percent", volume_slider.value)
 	var path := _appearance_settings_path()
 	var error := DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	if error == OK:
@@ -708,6 +740,16 @@ func _button_style(color: Color) -> StyleBoxFlat:
 
 func _show_file_dialog() -> void:
 	file_dialog.popup_centered_ratio(0.72)
+
+
+func _change_volume(amount: float) -> void:
+	volume_slider.value = clampf(volume_slider.value + amount, 0.0, 100.0)
+
+
+func _on_volume_changed(value: float) -> void:
+	audio_controller.set_volume_percent(value)
+	volume_value_label.text = "%d %%" % roundi(value)
+	_queue_save_appearance()
 
 
 func _on_file_selected(path: String) -> void:

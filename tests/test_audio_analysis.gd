@@ -23,6 +23,11 @@ func _run() -> void:
 		if not controller.load_file(path):
 			_fail("Не удалось загрузить %s: %s" % [path, controller.last_error])
 			return
+		if entry.hz == 800:
+			if not is_equal_approx(controller.get_volume_percent(), 35.0):
+				_fail("Загрузка нового трека сбросила громкость")
+				return
+			controller.set_volume_percent(100.0)
 		var levels := Vector3.ZERO
 		var volume := 0.0
 		for frame in range(20):
@@ -40,6 +45,18 @@ func _run() -> void:
 			_fail("Сигнал %d Гц не выделился в ожидаемой полосе" % entry.hz)
 			return
 		if entry.hz == 80:
+			var playback_position := player.get_playback_position()
+			controller.set_volume_percent(0.0)
+			var muted_levels := Vector3.ZERO
+			var muted_level := 0.0
+			for frame in range(4):
+				await create_timer(0.04).timeout
+				muted_levels = controller.get_spectrum_analysis(0.04)
+				muted_level = controller.get_audio_level(0.04)
+			if muted_levels.x < selected * 0.7 or muted_level < volume * 0.7 or player.get_playback_position() <= playback_position + 0.05:
+				_fail("Регулятор громкости не должен ослаблять анализ или перезапускать трек")
+				return
+			controller.set_volume_percent(100.0)
 			var position_before_pause := player.get_playback_position()
 			controller.toggle_playback()
 			if controller.is_active():
@@ -63,6 +80,7 @@ func _run() -> void:
 			if player.get_playback_position() <= position_before_pause + 0.05:
 				_fail("Возобновление должно продолжать звук с прежней позиции")
 				return
+			controller.set_volume_percent(35.0)
 
 	for extension in ["mp3", "ogg"]:
 		var encoded_path: String = fixture_root.path_join("800.%s" % extension)

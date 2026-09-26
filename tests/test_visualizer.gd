@@ -11,6 +11,36 @@ func _run() -> void:
 	var scene := MAIN_SCENE.instantiate()
 	root.add_child(scene)
 	await process_frame
+	scene._loading_appearance = true
+	var volume_down := scene.source_panel.find_child("VolumeDownButton", true, false) as Button
+	var volume_up := scene.source_panel.find_child("VolumeUpButton", true, false) as Button
+	if volume_down == null or volume_up == null:
+		_fail("Кнопки управления громкостью отсутствуют")
+		return
+	var source_bounds: Rect2 = scene.source_panel.get_global_rect()
+	if scene.volume_slider.get_global_rect().end.x > source_bounds.end.x - 12.0 or scene.volume_slider.get_global_rect().end.y > source_bounds.end.y - 12.0:
+		_fail("Регулятор громкости выходит за границы панели")
+		return
+	scene.volume_slider.value = 100.0
+	volume_down.pressed.emit()
+	var master_index := AudioServer.get_bus_index("Master")
+	if not is_equal_approx(scene.audio_controller.get_volume_percent(), 90.0) or not is_equal_approx(AudioServer.get_bus_volume_linear(master_index), 0.9) or scene.volume_value_label.text != "90 %":
+		_fail("Уменьшение громкости не применилось к звуку и индикатору")
+		return
+	volume_up.pressed.emit()
+	if not is_equal_approx(scene.audio_controller.get_volume_percent(), 100.0):
+		_fail("Увеличение громкости не вернуло исходный уровень")
+		return
+	scene.volume_slider.value = 0.0
+	volume_down.pressed.emit()
+	if scene.audio_controller.get_volume_percent() != 0.0 or AudioServer.get_bus_volume_linear(master_index) > 0.001:
+		_fail("Нулевая громкость не заглушила звук")
+		return
+	scene.volume_slider.value = 35.0
+	if not is_equal_approx(scene.audio_controller.get_volume_percent(), 35.0):
+		_fail("Ползунок громкости не установил выбранное значение")
+		return
+	scene.volume_slider.value = 100.0
 	var material := (scene.get_node("Orb") as MeshInstance3D).get_surface_override_material(0) as ShaderMaterial
 	var halo_material := (scene.get_node("Orb/Halo") as MeshInstance3D).get_surface_override_material(0) as ShaderMaterial
 	if material == null or material.shader == null:
@@ -165,6 +195,18 @@ func _run() -> void:
 	scene.audio_controller.toggle_playback()
 	if not scene.audio_controller.is_active():
 		_fail("Звук должен запускаться без интерфейса")
+		return
+	var volume_key := InputEventKey.new()
+	volume_key.keycode = KEY_DOWN
+	volume_key.pressed = true
+	scene._unhandled_input(volume_key)
+	if not is_equal_approx(scene.audio_controller.get_volume_percent(), 90.0) or not scene.audio_controller.is_active():
+		_fail("Клавиша вниз не меняет громкость в режиме просмотра")
+		return
+	volume_key.keycode = KEY_UP
+	scene._unhandled_input(volume_key)
+	if not is_equal_approx(scene.audio_controller.get_volume_percent(), 100.0):
+		_fail("Клавиша вверх не возвращает громкость")
 		return
 	await create_timer(0.5).timeout
 	if absf(scene.orb.position.x) > 0.02 or camera.position.z > 5.91:
