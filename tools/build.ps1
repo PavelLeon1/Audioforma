@@ -26,12 +26,12 @@ try {
     $env:APPDATA = $roaming
     $env:LOCALAPPDATA = $local
     & $editor --headless --path $projectRoot --import --log-file $importLog
-    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $importLog -Pattern 'SCRIPT ERROR:|Parse Error:' -Quiet)) {
+    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $importLog -Pattern 'SCRIPT ERROR:|Parse Error:|SHADER ERROR:|Shader compilation failed' -Quiet)) {
         throw "Не удалось импортировать ресурсы; журнал: $importLog"
     }
 
     & $editor --headless --path $projectRoot --export-release 'Windows Desktop' $output --log-file $exportLog
-    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $exportLog -Pattern 'SCRIPT ERROR:|Parse Error:|Project export failed|Export failed' -Quiet)) {
+    if ($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $exportLog -Pattern 'SCRIPT ERROR:|Parse Error:|SHADER ERROR:|Shader compilation failed|Project export failed|Export failed' -Quiet)) {
         throw "Не удалось экспортировать проект; журнал: $exportLog"
     }
     if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://scripts/spectrum_mapper.gdc' -Quiet)) {
@@ -42,6 +42,9 @@ try {
     }
     if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://shaders/halo.gdshader' -Quiet)) {
         throw 'Шейдер светящегося контура отсутствует в сборке.'
+    }
+    if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://shaders/reactive_common.gdshaderinc' -Quiet)) {
+        throw 'Общие формулы цвета и деформации отсутствуют в сборке.'
     }
     if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|bassboosted\.mp4|AGENT.md' -Quiet) {
         throw 'Сборка содержит файлы разработки.'
@@ -59,12 +62,13 @@ try {
     Push-Location $smokeDirectory
     try {
         $runtimeOutput = & '.\Audioforma.exe' --headless --quit-after 90 2>&1 | Out-String
+        $runtimeExitCode = $LASTEXITCODE
     }
     finally {
         Pop-Location
     }
     $runtimeOutput | Set-Content -LiteralPath (Join-Path $logs 'standalone_headless.txt') -Encoding UTF8
-    if ($runtimeOutput -notmatch 'Godot Engine' -or $runtimeOutput -match 'SCRIPT ERROR:|Parse Error:|Failed to load script|Cannot connect to|(?m)^ERROR: (?!Failed to read the root certificate store)') {
+    if ($runtimeExitCode -ne 0 -or $runtimeOutput -notmatch 'Godot Engine' -or $runtimeOutput -match 'SCRIPT ERROR:|Parse Error:|SHADER ERROR:|Shader compilation failed|Failed to load script|Cannot connect to|(?m)^ERROR: (?!Failed to read the root certificate store)') {
         throw "Автономный EXE не прошёл проверку; журнал: $logs\standalone_headless.txt"
     }
 

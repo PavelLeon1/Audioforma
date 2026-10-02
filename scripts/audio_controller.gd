@@ -100,7 +100,8 @@ func get_spectrum_analysis(delta: float) -> Vector3:
 				_read_band(250.0, 2000.0),
 				_read_band(2000.0, 8000.0)
 			)
-			_bass_hit = _bass_beat_detector.update(_read_magnitude(20.0, 120.0), delta, true)
+			var bass_magnitude := _read_magnitude(20.0, 120.0, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_AVERAGE)
+			_bass_hit = _bass_beat_detector.update(bass_magnitude, delta, true)
 		else:
 			_bass_beat_detector.reset()
 	else:
@@ -146,9 +147,9 @@ func _read_band(from_hz: float, to_hz: float) -> float:
 	return SpectrumMapper.normalize_magnitude(_read_magnitude(from_hz, to_hz))
 
 
-func _read_magnitude(from_hz: float, to_hz: float) -> float:
+func _read_magnitude(from_hz: float, to_hz: float, mode: int = AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX) -> float:
 	var stereo := _analyzer.get_magnitude_for_frequency_range(
-		from_hz, to_hz, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_MAX
+		from_hz, to_hz, mode
 	)
 	return maxf(stereo.x, stereo.y)
 

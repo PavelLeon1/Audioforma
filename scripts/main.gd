@@ -9,6 +9,9 @@ const CAMERA_STEP := 0.5
 const MAX_PITCH := 1.15
 const DEFAULT_ACCENT := Color(0.76, 0.16, 0.92)
 const DEFAULT_BACKGROUND := Color(0.024, 0.035, 0.069)
+const DEFAULT_QUIET_COLOR := Color(0.08, 0.48, 1.0)
+const DEFAULT_LOUD_COLOR := Color(1.0, 0.16, 0.22)
+const DEFAULT_LOUDNESS_MIX := 0.45
 const SETTINGS_FILENAME := "Audioforma.ini"
 const DEFAULT_WAVE_DIRECTION := 4
 
@@ -36,6 +39,9 @@ var source_panel: PanelContainer
 var appearance_panel: PanelContainer
 var accent_picker: ColorPickerButton
 var background_picker: ColorPickerButton
+var quiet_picker: ColorPickerButton
+var loud_picker: ColorPickerButton
+var settings_path_override := ""
 var appearance_sliders: Dictionary = {}
 var wave_direction_picker: OptionButton
 var appearance_save_label: Label
@@ -480,6 +486,9 @@ func _create_appearance_panel(screen: Control) -> void:
 	background_picker.color_changed.connect(_on_appearance_changed)
 	background_row.add_child(background_picker)
 
+	quiet_picker = _add_color_picker(form, "Тихий звук", DEFAULT_QUIET_COLOR)
+	loud_picker = _add_color_picker(form, "Громкий звук", DEFAULT_LOUD_COLOR)
+	_add_appearance_slider(form, "loudness_color_mix", "Цвет от громкости", 0.0, 1.0, DEFAULT_LOUDNESS_MIX)
 	_add_appearance_slider(form, "spectrum_mix", "Реакция цвета на спектр", 0.0, 1.0, 0.6)
 	_add_appearance_slider(form, "glow_strength", "Свечение", 0.0, 2.0, 1.0)
 	_add_appearance_slider(form, "outline_width", "Ширина контура", 0.5, 2.0, 1.0)
@@ -522,6 +531,20 @@ func _create_appearance_panel(screen: Control) -> void:
 	actions.add_child(back_button)
 
 
+func _add_color_picker(parent: VBoxContainer, title: String, initial: Color) -> ColorPickerButton:
+	var row := HBoxContainer.new()
+	parent.add_child(row)
+	var title_label := _label(title, 13, Color(0.8, 0.9, 0.96))
+	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title_label)
+	var picker := ColorPickerButton.new()
+	picker.color = initial
+	picker.custom_minimum_size = Vector2(73.0, 34.0)
+	picker.color_changed.connect(_on_appearance_changed)
+	row.add_child(picker)
+	return picker
+
+
 func _add_appearance_slider(parent: VBoxContainer, key: String, title: String, minimum: float, maximum: float, initial: float) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
@@ -555,6 +578,8 @@ func _on_appearance_changed(_color: Color) -> void:
 func _apply_visual_settings() -> void:
 	for material in _reactive_materials:
 		material.set_shader_parameter("accent_color", accent_picker.color)
+		material.set_shader_parameter("quiet_color", quiet_picker.color)
+		material.set_shader_parameter("loud_color", loud_picker.color)
 		for key in appearance_sliders:
 			if key != "rotation_speed" and key != "beat_sensitivity" and key != "shake_strength":
 				material.set_shader_parameter(key, appearance_sliders[key].value)
@@ -567,8 +592,11 @@ func _apply_visual_settings() -> void:
 func _reset_appearance() -> void:
 	accent_picker.color = DEFAULT_ACCENT
 	background_picker.color = DEFAULT_BACKGROUND
+	quiet_picker.color = DEFAULT_QUIET_COLOR
+	loud_picker.color = DEFAULT_LOUD_COLOR
 	for key in appearance_sliders:
-		appearance_sliders[key].value = 0.6 if key == "spectrum_mix" else 1.0
+		var defaults := {"spectrum_mix": 0.6, "loudness_color_mix": DEFAULT_LOUDNESS_MIX}
+		appearance_sliders[key].value = defaults.get(key, 1.0)
 	wave_direction_picker.selected = DEFAULT_WAVE_DIRECTION
 	_apply_visual_settings()
 	_queue_save_appearance()
@@ -588,6 +616,8 @@ func _queue_save_appearance() -> void:
 
 
 func _appearance_settings_path() -> String:
+	if not settings_path_override.is_empty():
+		return settings_path_override
 	var project_root := ProjectSettings.globalize_path("res://")
 	if FileAccess.file_exists(project_root.path_join("project.godot")):
 		return project_root.path_join(".local").path_join(SETTINGS_FILENAME)
@@ -605,6 +635,12 @@ func _load_appearance() -> void:
 		accent_picker.color = accent
 	if background is Color:
 		background_picker.color = background
+	var quiet: Variant = settings.get_value("appearance", "quiet_color", DEFAULT_QUIET_COLOR)
+	var loud: Variant = settings.get_value("appearance", "loud_color", DEFAULT_LOUD_COLOR)
+	if quiet is Color:
+		quiet_picker.color = quiet
+	if loud is Color:
+		loud_picker.color = loud
 	var volume: Variant = settings.get_value("audio", "volume_percent", 100.0)
 	if volume is float or volume is int:
 		volume_slider.value = clampf(volume, 0.0, 100.0)
@@ -622,6 +658,8 @@ func _save_appearance() -> void:
 	var settings := ConfigFile.new()
 	settings.set_value("appearance", "accent", accent_picker.color)
 	settings.set_value("appearance", "background", background_picker.color)
+	settings.set_value("appearance", "quiet_color", quiet_picker.color)
+	settings.set_value("appearance", "loud_color", loud_picker.color)
 	for key in appearance_sliders:
 		settings.set_value("appearance", key, appearance_sliders[key].value)
 	settings.set_value("appearance", "wave_direction", wave_direction_picker.selected)

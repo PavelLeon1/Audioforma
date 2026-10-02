@@ -9,6 +9,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var scene := MAIN_SCENE.instantiate()
+	scene.settings_path_override = ProjectSettings.globalize_path("user://visualizer-%d.ini" % Time.get_ticks_usec())
 	root.add_child(scene)
 	await process_frame
 	scene._loading_appearance = true
@@ -109,6 +110,9 @@ func _run() -> void:
 		_fail("Кнопка закрытия выходит за границы панели настроек")
 		return
 	scene.accent_picker.color = Color(1.0, 0.6, 0.1)
+	scene.quiet_picker.color = Color(0.0, 0.2, 1.0)
+	scene.loud_picker.color = Color(1.0, 0.1, 0.0)
+	scene.appearance_sliders["loudness_color_mix"].value = 0.7
 	scene.background_picker.color = Color(0.08, 0.02, 0.03)
 	scene.appearance_sliders["spectrum_mix"].value = 0.0
 	scene.appearance_sliders["glow_strength"].value = 1.4
@@ -119,6 +123,9 @@ func _run() -> void:
 	scene.wave_direction_picker.selected = 1
 	scene._apply_visual_settings()
 	for visual_material in [material, halo_material]:
+		if visual_material.get_shader_parameter("quiet_color") != scene.quiet_picker.color or visual_material.get_shader_parameter("loud_color") != scene.loud_picker.color or not is_equal_approx(visual_material.get_shader_parameter("loudness_color_mix"), 0.7):
+			_fail("Палитра громкости не передана обоим слоям")
+			return
 		if visual_material.get_shader_parameter("accent_color") != scene.accent_picker.color or not is_equal_approx(visual_material.get_shader_parameter("glow_strength"), 1.4):
 			_fail("Настройки цвета и свечения не переданы обоим слоям")
 			return
@@ -128,7 +135,18 @@ func _run() -> void:
 	if (scene.get_node("WorldEnvironment") as WorldEnvironment).environment.background_color != scene.background_picker.color or scene._auto_rotation_factor != 0.0 or not is_equal_approx(scene.audio_controller.get_bass_sensitivity(), 1.5):
 		_fail("Настройки фона, автовращения и чувствительности не применились")
 		return
+	scene._save_appearance()
+	scene.quiet_picker.color = Color.GREEN
+	scene.loud_picker.color = Color.GREEN
+	scene.appearance_sliders["loudness_color_mix"].value = 0.0
+	scene._load_appearance()
+	if scene.quiet_picker.color != Color(0.0, 0.2, 1.0) or scene.loud_picker.color != Color(1.0, 0.1, 0.0) or not is_equal_approx(scene.appearance_sliders["loudness_color_mix"].value, 0.7):
+		_fail("Палитра громкости не восстановилась из отдельного INI")
+		return
 	scene._reset_appearance()
+	if scene.quiet_picker.color != scene.DEFAULT_QUIET_COLOR or scene.loud_picker.color != scene.DEFAULT_LOUD_COLOR or not is_equal_approx(scene.appearance_sliders["loudness_color_mix"].value, scene.DEFAULT_LOUDNESS_MIX):
+		_fail("Сброс не восстановил палитру громкости")
+		return
 	if not is_equal_approx(material.get_shader_parameter("glow_strength"), 1.0) or scene.wave_direction_picker.selected != 4 or not is_equal_approx(scene.appearance_sliders["shake_strength"].value, 1.0):
 		_fail("Сброс настроек не восстановил свечение")
 		return
@@ -290,12 +308,14 @@ func _run() -> void:
 
 	print("PASS: шейдер, настройки, режим просмотра, ракурс и загрузка")
 	scene.audio_controller.player.stop()
+	var test_settings: String = scene.settings_path_override
 	scene.queue_free()
 	await create_timer(0.3).timeout
 	var bus_index := AudioServer.get_bus_index("Audio Analysis")
 	if bus_index >= 0:
 		AudioServer.remove_bus(bus_index)
 	await create_timer(0.1).timeout
+	DirAccess.remove_absolute(test_settings)
 	quit(0)
 
 

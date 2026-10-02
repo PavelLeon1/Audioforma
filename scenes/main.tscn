@@ -30,10 +30,12 @@ script = ExtResource("1_main")
 
 [node name="Orb" type="MeshInstance3D" parent="."]
 position = Vector3(1.55, 0, 0)
+extra_cull_margin = 1.25
 mesh = SubResource("SphereMesh_orb")
 surface_material_override/0 = SubResource("ShaderMaterial_orb")
 
 [node name="Halo" type="MeshInstance3D" parent="Orb"]
+extra_cull_margin = 1.25
 mesh = SubResource("SphereMesh_orb")
 surface_material_override/0 = SubResource("ShaderMaterial_halo")
 
