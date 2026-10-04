@@ -3,6 +3,7 @@ class_name AudioController
 
 signal playback_changed
 signal source_changed
+signal playback_seeked
 
 const SpectrumMapper = preload("res://scripts/spectrum_mapper.gd")
 const BassBeatDetector = preload("res://scripts/bass_beat_detector.gd")
@@ -22,6 +23,8 @@ var _level := 0.0
 var _bass_beat_detector = BassBeatDetector.new()
 var _bass_hit := 0.0
 var _volume_percent := 100.0
+var _position := 0.0
+var _analysis_ready_at_usec := 0
 
 
 func _ready() -> void:
@@ -78,10 +81,47 @@ func toggle_playback() -> void:
 	if player.stream_paused:
 		player.stream_paused = false
 	elif player.playing:
+		_position = get_position()
 		player.stream_paused = true
 	else:
-		player.play()
+		if _position >= get_duration():
+			_position = 0.0
+		player.play(_position)
 	playback_changed.emit()
+
+
+func get_duration() -> float:
+	return player.stream.get_length() if player.stream != null else 0.0
+
+
+func get_position() -> float:
+	if is_active():
+		return clampf(player.get_playback_position(), 0.0, get_duration())
+	return _position
+
+
+func seek_to(seconds: float) -> bool:
+	var duration := get_duration()
+	if duration <= 0.0 or not is_finite(seconds):
+		return false
+	var keep_paused := not is_active()
+	_position = clampf(seconds, 0.0, duration)
+	player.stop()
+	player.stream_paused = false
+	_clear_analysis()
+	# Новый экземпляр FFT не содержит спектр участка до перемотки.
+	if _bus_index >= 0 and AudioServer.get_bus_effect_count(_bus_index) > 0:
+		var effect := AudioServer.get_bus_effect(_bus_index, 0)
+		AudioServer.remove_bus_effect(_bus_index, 0)
+		AudioServer.add_bus_effect(_bus_index, effect, 0)
+		_analyzer = AudioServer.get_bus_effect_instance(_bus_index, 0) as AudioEffectSpectrumAnalyzerInstance
+	_analysis_ready_at_usec = Time.get_ticks_usec() + 60_000
+	if _position < duration:
+		player.play(_position)
+		player.stream_paused = keep_paused
+	playback_seeked.emit()
+	playback_changed.emit()
+	return true
 
 
 func is_active() -> bool:
@@ -91,7 +131,7 @@ func is_active() -> bool:
 func get_spectrum_analysis(delta: float) -> Vector3:
 	var target := Vector3.ZERO
 	_bass_hit = 0.0
-	if is_active():
+	if is_active() and Time.get_ticks_usec() >= _analysis_ready_at_usec:
 		if _analyzer == null and _bus_index >= 0:
 			_analyzer = AudioServer.get_bus_effect_instance(_bus_index, 0) as AudioEffectSpectrumAnalyzerInstance
 		if _analyzer != null:
@@ -135,7 +175,7 @@ func get_volume_percent() -> float:
 
 func get_audio_level(delta: float) -> float:
 	var target := 0.0
-	if is_active() and _bus_index >= 0:
+	if is_active() and _bus_index >= 0 and Time.get_ticks_usec() >= _analysis_ready_at_usec:
 		var left := AudioServer.get_bus_peak_volume_left_db(_bus_index, 0)
 		var right := AudioServer.get_bus_peak_volume_right_db(_bus_index, 0)
 		target = SpectrumMapper.normalize_peak(maxf(left, right))
@@ -178,10 +218,9 @@ func _set_stream(stream: AudioStream, name: String, format: String, autoplay: bo
 	source_name = name
 	var seconds := roundi(stream.get_length())
 	source_description = "%s · %d с" % [format, seconds]
-	_spectrum = Vector3.ZERO
-	_level = 0.0
-	_bass_beat_detector.reset()
-	_bass_hit = 0.0
+	_position = 0.0
+	_analysis_ready_at_usec = 0
+	_clear_analysis()
 	if autoplay:
 		player.play()
 	source_changed.emit()
@@ -189,4 +228,12 @@ func _set_stream(stream: AudioStream, name: String, format: String, autoplay: bo
 
 
 func _on_playback_finished() -> void:
+	_position = get_duration()
 	playback_changed.emit()
+
+
+func _clear_analysis() -> void:
+	_spectrum = Vector3.ZERO
+	_level = 0.0
+	_bass_beat_detector.reset()
+	_bass_hit = 0.0

@@ -81,6 +81,8 @@ func _run() -> void:
 				_fail("Возобновление должно продолжать звук с прежней позиции")
 				return
 			controller.set_volume_percent(35.0)
+			if not await _check_seeking(controller, "WAV"):
+				return
 
 	for extension in ["mp3", "ogg"]:
 		var encoded_path: String = fixture_root.path_join("800.%s" % extension)
@@ -94,6 +96,8 @@ func _run() -> void:
 		print("FORMAT %s: %.3f %.3f %.3f" % [extension, encoded_levels.x, encoded_levels.y, encoded_levels.z])
 		if encoded_levels.y < 0.2 or encoded_levels.y < maxf(encoded_levels.x, encoded_levels.z) + 0.08:
 			_fail("Сигнал 800 Гц в %s не выделился в средней полосе" % extension)
+			return
+		if not await _check_seeking(controller, extension.to_upper()):
 			return
 
 	var previous_stream := player.stream
@@ -133,3 +137,58 @@ func _run() -> void:
 func _fail(message: String) -> void:
 	push_error(message)
 	quit(1)
+
+
+func _check_seeking(controller: AudioController, format: String) -> bool:
+	var volume := controller.get_volume_percent()
+	var duration := controller.get_duration()
+	if not controller.seek_to(0.8) or not controller.is_active():
+		_fail("%s: перемотка остановила воспроизведение" % format)
+		return false
+	if controller.get_spectrum_analysis(0.016).length() > 0.01 or controller.get_audio_level(0.016) > 0.01 or controller.get_bass_hit() != 0.0:
+		_fail("%s: перемотка не сбросила прежнюю аудиореакцию" % format)
+		return false
+	await create_timer(0.14).timeout
+	if absf(controller.get_position() - 0.94) > 0.12:
+		_fail("%s: активная перемотка не перешла к выбранной секунде" % format)
+		return false
+	controller.toggle_playback()
+	controller.seek_to(1.4)
+	await create_timer(0.14).timeout
+	if not controller.player.stream_paused or controller.is_active() or absf(controller.get_position() - 1.4) > 0.01:
+		_fail("%s: перемотка на паузе изменила паузу или позицию" % format)
+		return false
+	controller.toggle_playback()
+	await create_timer(0.14).timeout
+	if not controller.is_active() or absf(controller.get_position() - 1.54) > 0.12:
+		_fail("%s: продолжение после перемотки началось не с выбранной секунды" % format)
+		return false
+	controller.seek_to(-5.0)
+	await create_timer(0.1).timeout
+	if controller.get_position() < 0.0 or controller.get_position() > 0.25:
+		_fail("%s: перемотка до начала вышла за границы" % format)
+		return false
+	controller.seek_to(duration + 5.0)
+	if controller.is_active() or not is_equal_approx(controller.get_position(), duration):
+		_fail("%s: перемотка до конца не остановилась на длительности" % format)
+		return false
+	controller.toggle_playback()
+	await create_timer(0.12).timeout
+	if not controller.is_active() or controller.get_position() > 0.3:
+		_fail("%s: повтор после конца не начался сначала" % format)
+		return false
+	controller.seek_to(duration - 0.06)
+	await create_timer(0.24).timeout
+	if controller.is_active() or not is_equal_approx(controller.get_position(), duration):
+		_fail("%s: естественное завершение не сохранило конечную позицию" % format)
+		return false
+	controller.seek_to(0.6)
+	if not controller.player.stream_paused or not is_equal_approx(controller.get_position(), 0.6):
+		_fail("%s: выбор позиции после завершения не подготовил продолжение" % format)
+		return false
+	controller.toggle_playback()
+	if not is_equal_approx(controller.get_volume_percent(), volume):
+		_fail("%s: перемотка изменила громкость" % format)
+		return false
+	print("SEEK %s: воспроизведение, пауза, границы и повтор проверены" % format)
+	return true

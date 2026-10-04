@@ -26,6 +26,10 @@ var _reactive_materials: Array[ShaderMaterial] = []
 var play_button: Button
 var volume_slider: HSlider
 var volume_value_label: Label
+var seek_slider: HSlider
+var position_label: Label
+var duration_label: Label
+var _seeking := false
 var playback_label: Label
 var status_panel: PanelContainer
 var source_name_label: Label
@@ -77,6 +81,7 @@ func _ready() -> void:
 	audio_controller.playback_changed.connect(_update_playback_interface)
 	audio_controller.source_changed.connect(_update_source_interface)
 	audio_controller.source_changed.connect(_reset_bass_waves)
+	audio_controller.playback_seeked.connect(_on_playback_seeked)
 	_update_source_interface()
 	_update_playback_interface()
 
@@ -95,6 +100,7 @@ func _process(delta: float) -> void:
 	_apply_audio_state(bands, level)
 	for index in range(3):
 		spectrum_bars[index].value = bands[index] * 100.0
+	_update_timeline()
 
 
 func _apply_audio_state(bands: Vector3, level: float) -> void:
@@ -196,6 +202,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_change_volume(10.0)
 		elif key.pressed and not key.echo and key.keycode == KEY_DOWN:
 			_change_volume(-10.0)
+		elif key.pressed and not key.echo and key.keycode in [KEY_LEFT, KEY_RIGHT]:
+			audio_controller.seek_to(audio_controller.get_position() + (-5.0 if key.keycode == KEY_LEFT else 5.0))
 		elif key.pressed and not key.echo and key.keycode == KEY_R:
 			_reset_view()
 		elif key.pressed and not key.echo and key.keycode == KEY_S and not focus_mode:
@@ -309,6 +317,29 @@ func _create_interface() -> void:
 	play_button.custom_minimum_size.y = 50.0
 	play_button.pressed.connect(audio_controller.toggle_playback)
 	column.add_child(play_button)
+	var timeline := HBoxContainer.new()
+	timeline.custom_minimum_size.y = 30.0
+	timeline.add_theme_constant_override("separation", 7)
+	column.add_child(timeline)
+	position_label = _label("0:00", 12, Color(0.67, 0.85, 0.9))
+	position_label.custom_minimum_size.x = 44.0
+	position_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	timeline.add_child(position_label)
+	seek_slider = HSlider.new()
+	seek_slider.name = "SeekSlider"
+	seek_slider.step = 0.1
+	seek_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	seek_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	seek_slider.tooltip_text = "Перемотка · ←/→ — на 5 секунд, в том числе в режиме просмотра"
+	seek_slider.drag_started.connect(func() -> void: _seeking = true)
+	seek_slider.drag_ended.connect(_on_seek_drag_ended)
+	seek_slider.value_changed.connect(_on_seek_value_changed)
+	timeline.add_child(seek_slider)
+	duration_label = _label("0:00", 12, Color(0.55, 0.65, 0.76))
+	duration_label.custom_minimum_size.x = 44.0
+	duration_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	duration_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	timeline.add_child(duration_label)
 	var volume_row := HBoxContainer.new()
 	volume_row.add_theme_constant_override("separation", 6)
 	column.add_child(volume_row)
@@ -328,6 +359,7 @@ func _create_interface() -> void:
 	volume_slider.step = 1.0
 	volume_slider.value = 100.0
 	volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	volume_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	volume_slider.tooltip_text = "↑/↓ — изменить громкость, в том числе в режиме просмотра"
 	volume_slider.value_changed.connect(_on_volume_changed)
 	volume_row.add_child(volume_slider)
@@ -809,6 +841,8 @@ func _update_source_interface() -> void:
 	source_name_label.text = audio_controller.source_name
 	source_name_label.tooltip_text = audio_controller.source_name
 	source_description_label.text = audio_controller.source_description
+	_seeking = false
+	_update_timeline()
 
 
 func _update_playback_interface() -> void:
@@ -816,6 +850,47 @@ func _update_playback_interface() -> void:
 	var paused := audio_controller.player.stream_paused
 	play_button.text = "Ⅱ  Приостановить" if active else ("▶  Продолжить" if paused else "▶  Воспроизвести")
 	_set_status("Звук воспроизводится" if active else ("Воспроизведение приостановлено" if paused else "Готово к воспроизведению"), false)
+	_update_timeline()
+
+
+func _update_timeline() -> void:
+	var duration := audio_controller.get_duration()
+	# Смена пределов Range может изменить value; это не пользовательская перемотка.
+	seek_slider.set_block_signals(true)
+	seek_slider.editable = duration > 0.0
+	seek_slider.max_value = maxf(duration, 0.1)
+	duration_label.text = _format_time(duration)
+	if not _seeking:
+		var position := audio_controller.get_position()
+		seek_slider.set_value_no_signal(position)
+		position_label.text = _format_time(position)
+	seek_slider.set_block_signals(false)
+
+
+func _format_time(seconds: float) -> String:
+	var total := maxi(0, floori(seconds))
+	return "%d:%02d" % [total / 60, total % 60]
+
+
+func _on_seek_value_changed(value: float) -> void:
+	position_label.text = _format_time(value)
+	if not _seeking and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		audio_controller.seek_to(value)
+
+
+func _on_seek_drag_ended(value_changed: bool) -> void:
+	_seeking = false
+	if value_changed:
+		audio_controller.seek_to(seek_slider.value)
+	_update_timeline()
+
+
+func _on_playback_seeked() -> void:
+	_reset_bass_waves()
+	_apply_audio_state(Vector3.ZERO, 0.0)
+	for bar in spectrum_bars:
+		bar.value = 0.0
+	_update_timeline()
 
 
 func _set_status(message: String, is_error: bool) -> void:

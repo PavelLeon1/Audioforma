@@ -13,6 +13,49 @@ func _run() -> void:
 	root.add_child(scene)
 	await process_frame
 	scene._loading_appearance = true
+	if scene.seek_slider == null or scene.duration_label.text != "0:24" or not scene.seek_slider.editable:
+		_fail("Ползунок перемотки или длительность демо не отображаются")
+		return
+	scene.audio_controller.load_demo()
+	scene._register_bass_hit(0.8)
+	scene.seek_slider.drag_started.emit()
+	scene.seek_slider.value = 8.0
+	if scene.position_label.text != "0:08" or scene.audio_controller.get_position() >= 1.0:
+		_fail("Перетаскивание должно показывать новую позицию без повторных переходов")
+		return
+	scene._update_timeline()
+	if not is_equal_approx(scene.seek_slider.value, 8.0):
+		_fail("Автообновление не должно возвращать перетаскиваемый ползунок")
+		return
+	scene.seek_slider.drag_ended.emit(true)
+	await create_timer(0.12).timeout
+	if absf(scene.audio_controller.get_position() - 8.12) > 0.15 or scene._beat_pulse != 0.0 or scene._shake_energy != 0.0:
+		_fail("Отпускание ползунка не перемотало аудио или не сбросило эффекты")
+		return
+	scene.audio_controller.toggle_playback()
+	scene.seek_slider.value = 10.0
+	if scene.position_label.text != "0:10" or not scene.audio_controller.player.stream_paused:
+		_fail("Перемотка с клавиатуры/ползунка должна сохранять паузу")
+		return
+	var seek_key := InputEventKey.new()
+	seek_key.keycode = KEY_RIGHT
+	seek_key.pressed = true
+	scene._set_focus_mode(true)
+	scene._unhandled_input(seek_key)
+	if not is_equal_approx(scene.audio_controller.get_position(), 15.0):
+		_fail("Клавиша вправо не перемотала звук в режиме просмотра")
+		return
+	seek_key.keycode = KEY_LEFT
+	scene._unhandled_input(seek_key)
+	if not is_equal_approx(scene.audio_controller.get_position(), 10.0):
+		_fail("Клавиша влево не перемотала звук назад")
+		return
+	scene._set_focus_mode(false)
+	scene.audio_controller.load_demo()
+	if scene.seek_slider.value > 0.1 or scene.position_label.text != "0:00":
+		_fail("Новый источник должен сбрасывать перемотку к началу")
+		return
+	scene.audio_controller.toggle_playback()
 	var volume_down := scene.source_panel.find_child("VolumeDownButton", true, false) as Button
 	var volume_up := scene.source_panel.find_child("VolumeUpButton", true, false) as Button
 	if volume_down == null or volume_up == null:
@@ -268,6 +311,7 @@ func _run() -> void:
 		_fail("Клавиша F должна возвращать интерфейс")
 		return
 
+	scene.audio_controller.seek_to(12.0)
 	var original_stream: AudioStream = scene.audio_controller.player.stream
 	if not scene.file_dialog.use_native_dialog or scene.file_dialog.filters[0].find("*.wav") < 0:
 		_fail("Выбор аудио не использует системный диалог с общим фильтром")
@@ -296,6 +340,9 @@ func _run() -> void:
 	scene._on_files_dropped(PackedStringArray(["unsupported.txt", valid_path]))
 	if scene.playback_label.text != "Звук воспроизводится":
 		_fail("Успешная загрузка не очистила ошибку")
+		return
+	if scene.seek_slider.value > 0.1 or scene.audio_controller.get_position() > 0.1 or scene.duration_label.text != "0:02":
+		_fail("Загрузка более короткого трека должна обновить длительность и начать с нуля")
 		return
 	if scene.file_dialog.current_dir != valid_path.get_base_dir():
 		_fail("Диалог не запомнил каталог последнего аудиофайла")
