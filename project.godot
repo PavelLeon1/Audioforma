@@ -5,6 +5,8 @@ config_version=5
 config/name="Аудиоформа"
 run/main_scene="res://scenes/main.tscn"
 config/description="Аудиореактивная 3D-визуализация"
+config/icon="res://assets/icons/audioforma.png"
+config/windows_native_icon="res://assets/icons/audioforma.ico"
 
 [display]
 
@@ -13,6 +15,7 @@ window/size/viewport_height=720
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [rendering]
 
