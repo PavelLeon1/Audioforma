@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="86.40mm" viewBox="0 0 1820 925">
+<rect width="100%" height="100%" fill="white"/>
+<rect x="20" y="20" width="520" height="150" fill="none" stroke="black" stroke-width="4"/>
+<text x="280.0" y="66.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Аудиофайл / демо</tspan></text>
+<text x="280.0" y="123.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Декодирование</tspan></text>
+<rect x="640" y="20" width="520" height="150" fill="none" stroke="black" stroke-width="4"/>
+<text x="900.0" y="66.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">AudioPlayer</tspan></text>
+<text x="900.0" y="123.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Звуковой поток</tspan></text>
+<rect x="1260" y="20" width="520" height="150" fill="none" stroke="black" stroke-width="4"/>
+<text x="1520.0" y="66.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Audio</tspan><tspan> </tspan><tspan font-style="italic">Analysis</tspan></text>
+<text x="1520.0" y="123.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Спектр и пики</tspan></text>
+<polyline points="540,95 640,95" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="614.0,108.0 640,95 614.0,82.0" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1160,95 1260,95" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1234.0,108.0 1260,95 1234.0,82.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="20" y="330" width="520" height="165" fill="none" stroke="black" stroke-width="4"/>
+<text x="280.0" y="384.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Команды пользователя</tspan></text>
+<text x="280.0" y="441.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Настройки</tspan></text>
+<rect x="640" y="330" width="520" height="195" fill="none" stroke="black" stroke-width="4"/>
+<text x="900.0" y="370.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Контроллер аудио</tspan></text>
+<text x="900.0" y="427.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нормализация</tspan></text>
+<text x="900.0" y="484.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Детектор акцентов</tspan></text>
+<rect x="1260" y="330" width="520" height="195" fill="none" stroke="black" stroke-width="4"/>
+<text x="1520.0" y="370.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Master</tspan></text>
+<text x="1520.0" y="427.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Громкость</tspan></text>
+<text x="1520.0" y="484.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Вывод звука</tspan></text>
+<polyline points="1520,170 1520,235 900,235 900,330" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="887.0,304.0 900,330 913.0,304.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="1110" y="273" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Спектр / уровень</tspan></text>
+<polyline points="1780,95 1800,95 1800,412 1780,412" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1806.0,399.0 1780,412 1806.0,425.0" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="540,412 640,412" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="614.0,425.0 640,412 614.0,399.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="640" y="650" width="520" height="165" fill="none" stroke="black" stroke-width="4"/>
+<text x="900.0" y="704.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Main</tspan></text>
+<text x="900.0" y="761.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Параметры шейдеров</tspan></text>
+<rect x="1260" y="650" width="520" height="250" fill="none" stroke="black" stroke-width="4"/>
+<text x="1520.0" y="689.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Ядро и оболочка</tspan></text>
+<text x="1520.0" y="746.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">vertex</tspan><tspan> / </tspan><tspan font-style="italic">fragment</tspan></text>
+<text x="1520.0" y="803.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Трёхмерное</tspan></text>
+<text x="1520.0" y="860.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>изображение</tspan></text>
+<polyline points="900,525 900,650" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="887.0,624.0 900,650 913.0,624.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="1180" y="570" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Полосы / акценты</tspan></text>
+<polyline points="280,495 280,733 640,733" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="614.0,746.0 640,733 614.0,720.0" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1160,733 1260,733" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1234.0,746.0 1260,733 1234.0,720.0" fill="none" stroke="black" stroke-width="4"/>
+</svg>

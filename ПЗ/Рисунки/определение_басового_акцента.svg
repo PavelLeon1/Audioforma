@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="104.83mm" viewBox="0 0 1800 1110">
+<rect width="100%" height="100%" fill="white"/>
+<rect x="430" y="15" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
+<text x="890.0" y="51.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Средняя величина 20–120 Гц</tspan></text>
+<text x="890.0" y="108.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Проверка входных условий</tspan></text>
+<polyline points="890,145 890,205" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="877.0,179.0 890,205 903.0,179.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="430" y="205" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
+<text x="890.0" y="241.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>История за 80 мс, интервал событий</tspan></text>
+<text x="890.0" y="298.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Повторная готовность после спада</tspan></text>
+<polyline points="890,335 890,395" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="877.0,369.0 890,395 903.0,369.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="430" y="395" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
+<text x="890.0" y="431.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Контраст и рост относительно истории</tspan></text>
+<text x="890.0" y="488.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Обновление фона: постоянная 0,65 с</tspan></text>
+<polyline points="890,525 890,585" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="877.0,559.0 890,585 903.0,559.0" fill="none" stroke="black" stroke-width="4"/>
+<polygon points="890,585.0 1350.0,690 890,795.0 430.0,690" fill="none" stroke="black" stroke-width="4"/>
+<text x="890" y="663.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Условия акцента</tspan></text>
+<text x="890" y="716.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>выполнены?</tspan></text>
+<polyline points="430,690 145,690 145,920 280,920" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="254.0,933.0 280,920 254.0,907.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="235" y="652" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нет</tspan></text>
+<polyline points="1350,690 1635,690 1635,920 1510,920" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1536.0,907.0 1510,920 1536.0,933.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="1495" y="652" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Да</tspan></text>
+<rect x="280" y="850" width="530" height="190" fill="none" stroke="black" stroke-width="4"/>
+<text x="545.0" y="916.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Возврат 0</tspan></text>
+<text x="545.0" y="973.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Без нового события</tspan></text>
+<rect x="980" y="850" width="530" height="190" fill="none" stroke="black" stroke-width="4"/>
+<text x="1245.0" y="888.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Интервал 0,14 с</tspan></text>
+<text x="1245.0" y="945.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сброс готовности</tspan></text>
+<text x="1245.0" y="1002.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Возврат силы 0,4–1</tspan></text>
+<text x="900" y="1080" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Начальный слышимый отсчёт задаёт фон без формирования акцента</tspan></text>
+</svg>
