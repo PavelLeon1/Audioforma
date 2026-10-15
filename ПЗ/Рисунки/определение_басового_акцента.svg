@@ -1,35 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="104.83mm" viewBox="0 0 1800 1110">
+<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="101.00mm" viewBox="0 0 1700 1010">
 <rect width="100%" height="100%" fill="white"/>
-<rect x="430" y="15" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
-<text x="890.0" y="51.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Средняя величина 20–120 Гц</tspan></text>
-<text x="890.0" y="108.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Проверка входных условий</tspan></text>
-<polyline points="890,145 890,205" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="877.0,179.0 890,205 903.0,179.0" fill="none" stroke="black" stroke-width="4"/>
-<rect x="430" y="205" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
-<text x="890.0" y="241.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>История за 80 мс, интервал событий</tspan></text>
-<text x="890.0" y="298.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Повторная готовность после спада</tspan></text>
-<polyline points="890,335 890,395" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="877.0,369.0 890,395 903.0,369.0" fill="none" stroke="black" stroke-width="4"/>
-<rect x="430" y="395" width="920" height="130" fill="none" stroke="black" stroke-width="4"/>
-<text x="890.0" y="431.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Контраст и рост относительно истории</tspan></text>
-<text x="890.0" y="488.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Обновление фона: постоянная 0,65 с</tspan></text>
-<polyline points="890,525 890,585" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="877.0,559.0 890,585 903.0,559.0" fill="none" stroke="black" stroke-width="4"/>
-<polygon points="890,585.0 1350.0,690 890,795.0 430.0,690" fill="none" stroke="black" stroke-width="4"/>
-<text x="890" y="663.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Условия акцента</tspan></text>
-<text x="890" y="716.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>выполнены?</tspan></text>
-<polyline points="430,690 145,690 145,920 280,920" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="254.0,933.0 280,920 254.0,907.0" fill="none" stroke="black" stroke-width="4"/>
-<text x="235" y="652" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нет</tspan></text>
-<polyline points="1350,690 1635,690 1635,920 1510,920" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="1536.0,907.0 1510,920 1536.0,933.0" fill="none" stroke="black" stroke-width="4"/>
-<text x="1495" y="652" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Да</tspan></text>
-<rect x="280" y="850" width="530" height="190" fill="none" stroke="black" stroke-width="4"/>
-<text x="545.0" y="916.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Возврат 0</tspan></text>
-<text x="545.0" y="973.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Без нового события</tspan></text>
-<rect x="980" y="850" width="530" height="190" fill="none" stroke="black" stroke-width="4"/>
-<text x="1245.0" y="888.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Интервал 0,14 с</tspan></text>
-<text x="1245.0" y="945.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сброс готовности</tspan></text>
-<text x="1245.0" y="1002.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Возврат силы 0,4–1</tspan></text>
-<text x="900" y="1080" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Начальный слышимый отсчёт задаёт фон без формирования акцента</tspan></text>
+<rect x="130" y="20" width="1000" height="112" fill="none" stroke="black" stroke-width="4"/>
+<text x="630.0" y="50.7" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Измерение 20–120 Гц</tspan></text>
+<text x="630.0" y="101.3" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Корректный отсчёт при воспроизведении</tspan></text>
+<polyline points="630,132 630,180" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="617.0,154.0 630,180 643.0,154.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="130" y="180" width="1000" height="112" fill="none" stroke="black" stroke-width="4"/>
+<text x="630.0" y="210.7" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>История за 80 мс</tspan></text>
+<text x="630.0" y="261.3" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Контраст к фону и рост уровня</tspan></text>
+<polyline points="630,292 630,340" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="617.0,314.0 630,340 643.0,314.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="130" y="340" width="1000" height="112" fill="none" stroke="black" stroke-width="4"/>
+<text x="630.0" y="370.7" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Обновление фона и готовности</tspan></text>
+<text x="630.0" y="421.3" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Проверка интервала между событиями</tspan></text>
+<polyline points="630,452 630,510" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="617.0,484.0 630,510 643.0,484.0" fill="none" stroke="black" stroke-width="4"/>
+<polygon points="630,510.0 1130.0,610 630,710.0 130.0,610" fill="none" stroke="black" stroke-width="4"/>
+<text x="630" y="583.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Все условия акцента</tspan></text>
+<text x="630" y="636.5" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>выполнены?</tspan></text>
+<polyline points="630,710 630,770" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="617.0,744.0 630,770 643.0,744.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="715" y="741" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Да</tspan></text>
+<rect x="130" y="770" width="1000" height="150" fill="none" stroke="black" stroke-width="4"/>
+<text x="630.0" y="794.4" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сформировать акцент силой 0,4–1</tspan></text>
+<text x="630.0" y="845.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Запретить повтор до спада уровня</tspan></text>
+<text x="630.0" y="895.6" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Установить интервал 0,14 с</tspan></text>
+<polyline points="1130,610 1240,610" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1214.0,623.0 1240,610 1214.0,597.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="1185" y="565" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нет</tspan></text>
+<rect x="1240" y="535" width="430" height="150" fill="none" stroke="black" stroke-width="4"/>
+<text x="1455.0" y="561.7" font-family="Times New Roman" font-size="42" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Вернуть 0</tspan></text>
+<text x="1455.0" y="610.0" font-family="Times New Roman" font-size="42" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нового акцента</tspan></text>
+<text x="1455.0" y="658.3" font-family="Times New Roman" font-size="42" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>нет</tspan></text>
+<text x="850" y="975" font-family="Times New Roman" font-size="40" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Первый слышимый отсчёт задаёт фон без формирования акцента</tspan></text>
 </svg>

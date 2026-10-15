@@ -1,43 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="88.58mm" viewBox="0 0 1900 990">
+<svg xmlns="http://www.w3.org/2000/svg" width="170mm" height="88.00mm" viewBox="0 0 1700 880">
 <rect width="100%" height="100%" fill="white"/>
-<rect x="30" y="20" width="490" height="115" fill="none" stroke="black" stroke-width="4"/>
-<text x="275.0" y="77.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Node3D</tspan></text>
-<rect x="650" y="20" width="490" height="115" fill="none" stroke="black" stroke-width="4"/>
-<text x="895.0" y="77.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Node</tspan></text>
-<rect x="1280" y="20" width="570" height="115" fill="none" stroke="black" stroke-width="4"/>
-<text x="1565.0" y="77.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">RefCounted</tspan></text>
-<rect x="30" y="285" width="490" height="320" fill="none" stroke="black" stroke-width="4"/>
-<text x="275.0" y="359.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Main</tspan></text>
-<text x="275.0" y="416.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">main.gd</tspan></text>
-<text x="275.0" y="473.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сцена и интерфейс</tspan></text>
-<text x="275.0" y="530.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Параметры шейдеров</tspan></text>
-<rect x="650" y="285" width="490" height="320" fill="none" stroke="black" stroke-width="4"/>
-<text x="895.0" y="359.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">AudioController</tspan></text>
-<text x="895.0" y="416.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Звук и анализ</tspan></text>
-<text x="895.0" y="473.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Загрузка и перемотка</tspan></text>
-<text x="895.0" y="530.5" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">get_spectrum_analysis</tspan></text>
-<rect x="1280" y="285" width="570" height="245" fill="none" stroke="black" stroke-width="4"/>
-<text x="1565.0" y="322.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">SpectrumMapper</tspan></text>
-<text x="1565.0" y="379.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Статические методы</tspan></text>
-<text x="1565.0" y="436.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Нормализация</tspan></text>
-<text x="1565.0" y="493.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сглаживание</tspan></text>
-<rect x="1280" y="670" width="570" height="210" fill="none" stroke="black" stroke-width="4"/>
-<text x="1565.0" y="718.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">BassBeatDetector</tspan></text>
-<text x="1565.0" y="775.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>История, фон, </tspan><tspan font-style="italic">sensitivity</tspan></text>
-<text x="1565.0" y="832.0" font-family="Times New Roman" font-size="48" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">update</tspan><tspan> / </tspan><tspan font-style="italic">reset</tspan></text>
-<polyline points="275,285 275,135" fill="none" stroke="black" stroke-width="4"/>
-<polygon points="275.0,135.0 288.0,161.0 262.0,161.0" fill="white" stroke="black" stroke-width="4"/>
-<polyline points="895,285 895,135" fill="none" stroke="black" stroke-width="4"/>
-<polygon points="895.0,135.0 908.0,161.0 882.0,161.0" fill="white" stroke="black" stroke-width="4"/>
-<polyline points="1565,285 1565,135" fill="none" stroke="black" stroke-width="4"/>
-<polygon points="1565.0,135.0 1578.0,161.0 1552.0,161.0" fill="white" stroke="black" stroke-width="4"/>
-<polyline points="1565,670 1870,670 1870,190 1760,190 1760,135" fill="none" stroke="black" stroke-width="4"/>
-<polygon points="1760.0,135.0 1773.0,161.0 1747.0,161.0" fill="white" stroke="black" stroke-width="4"/>
-<polyline points="520,430 650,430" fill="none" stroke="black" stroke-width="4" stroke-dasharray="15 15"/>
-<polyline points="624.0,443.0 650,430 624.0,417.0" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="1140,390 1280,390" fill="none" stroke="black" stroke-width="4" stroke-dasharray="15 15"/>
-<polyline points="1254.0,403.0 1280,390 1254.0,377.0" fill="none" stroke="black" stroke-width="4"/>
-<polyline points="1140,550 1205,550 1205,775 1280,775" fill="none" stroke="black" stroke-width="4" stroke-dasharray="15 15"/>
-<polyline points="1254.0,788.0 1280,775 1254.0,762.0" fill="none" stroke="black" stroke-width="4"/>
-<text x="940" y="938" font-family="Times New Roman" font-size="46" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Сплошная стрелка – наследование; пунктир – использование</tspan></text>
+<text x="850" y="35" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Наследование: базовый тип → сценарий приложения</tspan></text>
+<rect x="70" y="85" width="500" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="320.0" y="135.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Node3D</tspan></text>
+<rect x="800" y="85" width="800" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="1200.0" y="135.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Main</tspan><tspan> (</tspan><tspan font-style="italic">main.gd)</tspan></text>
+<polyline points="570,135 800,135" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="774.0,148.0 800,135 774.0,122.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="70" y="215" width="500" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="320.0" y="265.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Node</tspan></text>
+<rect x="800" y="215" width="800" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="1200.0" y="265.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">AudioController</tspan></text>
+<polyline points="570,265 800,265" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="774.0,278.0 800,265 774.0,252.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="70" y="345" width="500" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="320.0" y="395.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">RefCounted</tspan></text>
+<rect x="800" y="345" width="800" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="1200.0" y="395.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">SpectrumMapper</tspan></text>
+<polyline points="570,395 800,395" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="774.0,408.0 800,395 774.0,382.0" fill="none" stroke="black" stroke-width="4"/>
+<rect x="70" y="475" width="500" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="320.0" y="525.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">RefCounted</tspan></text>
+<rect x="800" y="475" width="800" height="100" fill="none" stroke="black" stroke-width="4"/>
+<text x="1200.0" y="525.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">BassBeatDetector</tspan></text>
+<polyline points="570,525 800,525" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="774.0,538.0 800,525 774.0,512.0" fill="none" stroke="black" stroke-width="4"/>
+<text x="850" y="650" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan>Порядок вызовов при обновлении кадра</tspan></text>
+<rect x="20" y="700" width="360" height="140" fill="none" stroke="black" stroke-width="4"/>
+<text x="200.0" y="770.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">Main</tspan></text>
+<rect x="460" y="700" width="550" height="140" fill="none" stroke="black" stroke-width="4"/>
+<text x="735.0" y="770.0" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">AudioController</tspan></text>
+<rect x="1110" y="700" width="570" height="140" fill="none" stroke="black" stroke-width="4"/>
+<text x="1395.0" y="744.7" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">SpectrumMapper</tspan></text>
+<text x="1395.0" y="795.3" font-family="Times New Roman" font-size="44" font-weight="normal" text-anchor="middle" dominant-baseline="middle"><tspan font-style="italic">BassBeatDetector</tspan></text>
+<polyline points="380,770 460,770" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="434.0,783.0 460,770 434.0,757.0" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1010,770 1110,770" fill="none" stroke="black" stroke-width="4"/>
+<polyline points="1084.0,783.0 1110,770 1084.0,757.0" fill="none" stroke="black" stroke-width="4"/>
 </svg>
