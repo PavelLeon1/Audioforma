@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="594mm" height="841mm" viewBox="0 0 594 841" version="1.1" content="&lt;mxfile host=&quot;app.diagrams.net&quot; type=&quot;device&quot; compressed=&quot;false&quot;&gt;&lt;diagram id=&quot;audioforma-a1&quot; name=&quot;Диаграмма вариантов использования&quot;&gt;&lt;mxGraphModel dx=&quot;0&quot; dy=&quot;0&quot; grid=&quot;0&quot; gridSize=&quot;10&quot; guides=&quot;1&quot; tooltips=&quot;1&quot; connect=&quot;1&quot; arrows=&quot;1&quot; fold=&quot;1&quot; page=&quot;1&quot; pageScale=&quot;1&quot; pageWidth=&quot;2245.03937&quot; pageHeight=&quot;3178.58268&quot; math=&quot;0&quot; shadow=&quot;0&quot; background=&quot;#ffffff&quot;&gt;&lt;root&gt;&lt;mxCell id=&quot;0&quot; /&gt;&lt;mxCell id=&quot;1&quot; parent=&quot;0&quot; /&gt;&lt;mxCell id=&quot;title&quot; value=&quot;ДИАГРАММА ВАРИАНТОВ ИСПОЛЬЗОВАНИЯ&quot; style=&quot;text;html=0;whiteSpace=nowrap;fontFamily=Times New Roman;fontColor=#000000;fillColor=none;strokeColor=none;align=center;verticalAlign=middle;spacing=0;fontSize=52;fontStyle=1;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;75.59055&quot; y=&quot;109.6063&quot; width=&quot;2093.85827&quot; height=&quot;94.48819&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;system&quot; value=&quot;&quot; style=&quot;container=1;collapsible=0;recursiveResize=0;rounded=0;html=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;793.70079&quot; y=&quot;347.71654&quot; width=&quot;1303.93701&quot; height=&quot;2588.97638&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;system_title&quot; value=&quot;Приложение «Аудиоформа»&quot; style=&quot;text;html=0;whiteSpace=nowrap;fontFamily=Times New Roman;fontColor=#000000;fillColor=none;strokeColor=none;align=center;verticalAlign=middle;spacing=0;align=left;fontStyle=1;fontSize=39.68504;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;68.0315&quot; y=&quot;45.35433&quot; width=&quot;1167.87402&quot; height=&quot;86.92913&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor&quot; value=&quot;&quot; style=&quot;group;container=1;collapsible=0;recursiveResize=0;&quot; parent=&quot;1&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;215.43307&quot; y=&quot;1538.26772&quot; width=&quot;257.00787&quot; height=&quot;616.06299&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_head&quot; value=&quot;&quot; style=&quot;ellipse;html=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=3.40157;&quot; parent=&quot;actor&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;79.37008&quot; y=&quot;0&quot; width=&quot;98.26772&quot; height=&quot;98.26772&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_body&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;strokeColor=#000000;strokeWidth=3.40157;&quot; parent=&quot;actor&quot; edge=&quot;1&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&lt;mxPoint x=&quot;128.50394&quot; y=&quot;98.26772&quot; as=&quot;sourcePoint&quot; /&gt;&lt;mxPoint x=&quot;128.50394&quot; y=&quot;313.70079&quot; as=&quot;targetPoint&quot; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_arms&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;strokeColor=#000000;strokeWidth=3.40157;&quot; parent=&quot;actor&quot; edge=&quot;1&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&lt;mxPoint x=&quot;0&quot; y=&quot;204.09449&quot; as=&quot;sourcePoint&quot; /&gt;&lt;mxPoint x=&quot;257.00787&quot; y=&quot;204.09449&quot; as=&quot;targetPoint&quot; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_leg_left&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;strokeColor=#000000;strokeWidth=3.40157;&quot; parent=&quot;actor&quot; edge=&quot;1&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&lt;mxPoint x=&quot;128.50394&quot; y=&quot;313.70079&quot; as=&quot;sourcePoint&quot; /&gt;&lt;mxPoint x=&quot;30.23622&quot; y=&quot;480&quot; as=&quot;targetPoint&quot; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_leg_right&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;strokeColor=#000000;strokeWidth=3.40157;&quot; parent=&quot;actor&quot; edge=&quot;1&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot;&gt;&lt;mxPoint x=&quot;128.50394&quot; y=&quot;313.70079&quot; as=&quot;sourcePoint&quot; /&gt;&lt;mxPoint x=&quot;226.77165&quot; y=&quot;480&quot; as=&quot;targetPoint&quot; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;actor_name&quot; value=&quot;Пользователь&quot; style=&quot;text;html=0;whiteSpace=nowrap;fontFamily=Times New Roman;fontColor=#000000;fillColor=none;strokeColor=none;align=center;verticalAlign=middle;spacing=0;fontSize=37.79528;&quot; parent=&quot;actor&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;-83.14961&quot; y=&quot;514.01575&quot; width=&quot;423.30709&quot; height=&quot;75.59055&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_open_audio&quot; value=&quot;Открыть аудиофайл&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;200.31496&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_open_audio&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_open_audio&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_demo&quot; value=&quot;Включить демонстрационную&amp;#10;запись&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;495.11811&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_demo&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_demo&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_playback&quot; value=&quot;Управлять&amp;#10;воспроизведением&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;789.92126&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_playback&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_playback&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_visualization&quot; value=&quot;Наблюдать трёхмерную&amp;#10;визуализацию&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;1084.72441&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_visualization&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_visualization&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_mode&quot; value=&quot;Выбрать режим&amp;#10;деформации&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;1379.52756&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_mode&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_mode&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_appearance&quot; value=&quot;Настроить внешний вид&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;1674.33071&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_appearance&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_appearance&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_camera&quot; value=&quot;Изменить ракурс&amp;#10;объекта&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;1969.13386&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_camera&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_camera&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;uc_focus&quot; value=&quot;Переключить режим&amp;#10;просмотра&quot; style=&quot;ellipse;html=0;whiteSpace=nowrap;align=center;verticalAlign=middle;spacing=0;fontFamily=Times New Roman;fontSize=37.79528;fontColor=#000000;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2.45669;&quot; parent=&quot;system&quot; vertex=&quot;1&quot;&gt;&lt;mxGeometry x=&quot;173.85827&quot; y=&quot;2263.93701&quot; width=&quot;1020.47244&quot; height=&quot;219.2126&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&quot;assoc_uc_focus&quot; value=&quot;&quot; style=&quot;endArrow=none;startArrow=none;html=0;rounded=0;edgeStyle=none;exitX=1;exitY=0.3312883436;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#000000;strokeWidth=2.07874;&quot; parent=&quot;1&quot; edge=&quot;1&quot; source=&quot;actor&quot; target=&quot;uc_focus&quot;&gt;&lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;" role="img" aria-labelledby="diagram-title diagram-description">
+  <title id="diagram-title">Диаграмма вариантов использования приложения «Аудиоформа»</title>
+  <desc id="diagram-description">Формат А1, книжная ориентация. Один пользователь и восемь вариантов использования. Прямые ассоциации показывают участие пользователя в действиях приложения.</desc>
+  <rect id="page" width="594" height="841" fill="#ffffff" />
+  <g id="heading">
+    <text x="297" y="41.5" font-family="Times New Roman, Times, serif" font-size="13.758333333333331" font-weight="bold" text-anchor="middle" fill="#000000">
+      <tspan x="297" y="46.040">ДИАГРАММА ВАРИАНТОВ ИСПОЛЬЗОВАНИЯ</tspan>
+    </text>
+  </g>
+  <g id="subject">
+    <rect x="210.0" y="92.0" width="345.0" height="685.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="228.0" y="115.5" font-family="Times New Roman, Times, serif" font-size="10.5" font-weight="bold" text-anchor="start" fill="#000000">
+      <tspan x="228.0" y="118.965">Приложение «Аудиоформа»</tspan>
+    </text>
+  </g>
+  <g id="associations" fill="none" stroke="#000000" stroke-width=".55">
+    <path id="link_uc_open_audio" d="M 125.0 461.0 L 256.0 174.0" />
+    <path id="link_uc_demo" d="M 125.0 461.0 L 256.0 252.0" />
+    <path id="link_uc_playback" d="M 125.0 461.0 L 256.0 330.0" />
+    <path id="link_uc_visualization" d="M 125.0 461.0 L 256.0 408.0" />
+    <path id="link_uc_mode" d="M 125.0 461.0 L 256.0 486.0" />
+    <path id="link_uc_appearance" d="M 125.0 461.0 L 256.0 564.0" />
+    <path id="link_uc_camera" d="M 125.0 461.0 L 256.0 642.0" />
+    <path id="link_uc_focus" d="M 125.0 461.0 L 256.0 720.0" />
+  </g>
+  <g id="user" fill="none" stroke="#000000" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="91" cy="420" r="13" fill="#ffffff" />
+    <path d="M 91 433 L 91 490 M 57 461 L 125 461 M 91 490 L 65 534 M 91 490 L 117 534" />
+  </g>
+  <g id="user-label">
+    <text x="91" y="553" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="91" y="556.300">Пользователь</tspan>
+    </text>
+  </g>
+  <g id="uc_open_audio">
+    <title>Выбор MP3, WAV или OGG Vorbis системным диалогом либо перетаскиванием файла.</title>
+    <ellipse cx="391.0" cy="174.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="174.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="177.300">Открыть аудиофайл</tspan>
+    </text>
+  </g>
+  <g id="uc_demo">
+    <title>Воспроизведение встроенного фрагмента «Спектральный этюд».</title>
+    <ellipse cx="391.0" cy="252.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="252.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="249.300">Включить демонстрационную</tspan>
+      <tspan x="391.0" y="261.300">запись</tspan>
+    </text>
+  </g>
+  <g id="uc_playback">
+    <title>Пауза и продолжение, перемотка и регулирование громкости.</title>
+    <ellipse cx="391.0" cy="330.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="330.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="327.300">Управлять</tspan>
+      <tspan x="391.0" y="339.300">воспроизведением</tspan>
+    </text>
+  </g>
+  <g id="uc_visualization">
+    <title>Наблюдение изменения формы, цвета и свечения объекта по характеристикам звука.</title>
+    <ellipse cx="391.0" cy="408.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="408.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="405.300">Наблюдать трёхмерную</tspan>
+      <tspan x="391.0" y="417.300">визуализацию</tspan>
+    </text>
+  </g>
+  <g id="uc_mode">
+    <title>Выбор «Все», «Пульс», «Волны» или «Рябь».</title>
+    <ellipse cx="391.0" cy="486.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="486.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="483.300">Выбрать режим</tspan>
+      <tspan x="391.0" y="495.300">деформации</tspan>
+    </text>
+  </g>
+  <g id="uc_appearance">
+    <title>Изменение цветов, силы эффектов, направления волн и параметров движения; сброс оформления.</title>
+    <ellipse cx="391.0" cy="564.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="564.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="567.300">Настроить внешний вид</tspan>
+    </text>
+  </g>
+  <g id="uc_camera">
+    <title>Вращение мышью, приближение и отдаление, сброс ракурса.</title>
+    <ellipse cx="391.0" cy="642.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="642.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="639.300">Изменить ракурс</tspan>
+      <tspan x="391.0" y="651.300">объекта</tspan>
+    </text>
+  </g>
+  <g id="uc_focus">
+    <title>Скрытие панелей для просмотра объекта и возврат к обычному интерфейсу.</title>
+    <ellipse cx="391.0" cy="720.0" rx="135.0" ry="29.0" fill="#ffffff" stroke="#000000" stroke-width=".65" />
+    <text x="391.0" y="720.0" font-family="Times New Roman, Times, serif" font-size="10" font-weight="normal" text-anchor="middle" fill="#000000">
+      <tspan x="391.0" y="717.300">Переключить режим</tspan>
+      <tspan x="391.0" y="729.300">просмотра</tspan>
+    </text>
+  </g>
+</svg>
