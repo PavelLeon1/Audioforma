@@ -17,6 +17,8 @@ func _run() -> void:
 	controller.name = "AudioController"
 	holder.add_child(controller)
 	controller.set_volume_percent(0.0)
+	if not await _check_first_hit_after_seek(controller):
+		return
 	var dense := _make_dense_stream()
 	var old_max_fps := Engine.max_fps
 	for profile in ["demo", "dense"]:
@@ -75,6 +77,56 @@ func _make_dense_stream() -> AudioStreamWAV:
 		var high := sin(TAU * 5000.0 * time) * exp(-phase * 65.0) * 0.07
 		var sample := clampf((kick + bass + mid + high) * 1.5, -0.65, 0.65)
 		data.encode_s16(index * 2, roundi(sample * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = sample_rate
+	stream.data = data
+	return stream
+
+
+func _check_first_hit_after_seek(controller: AudioController) -> bool:
+	var stream := _make_first_hit_stream()
+	var old_max_fps := Engine.max_fps
+	for fps in [30, 60, 144]:
+		Engine.max_fps = fps
+		for paused in [false, true]:
+			controller._set_stream(stream, "Первый удар после перемотки", "PCM", true)
+			if paused:
+				controller.toggle_playback()
+			controller.seek_to(0.5)
+			if paused:
+				await create_timer(0.12).timeout
+				controller.toggle_playback()
+			var hits := 0
+			var first_position := 0.0
+			var previous := Time.get_ticks_usec()
+			while controller.get_position() < 0.98:
+				await process_frame
+				var now := Time.get_ticks_usec()
+				controller.get_spectrum_analysis((now - previous) / 1_000_000.0)
+				previous = now
+				if controller.get_bass_hit() > 0.0:
+					hits += 1
+					first_position = controller.get_position()
+			if hits != 1 or first_position < 0.62 or first_position > 0.85:
+				Engine.max_fps = old_max_fps
+				_fail("Первый удар после перемотки: FPS=%d, пауза=%s, событий=%d, позиция=%.3f" % [fps, paused, hits, first_position])
+				return false
+			print("FIRST SEEK %d FPS, paused=%s: один удар на %.3f с" % [fps, paused, first_position])
+	Engine.max_fps = old_max_fps
+	return true
+
+
+func _make_first_hit_stream() -> AudioStreamWAV:
+	var sample_rate := 48000
+	var data := PackedByteArray()
+	data.resize(sample_rate * 2 * 2)
+	for index in range(sample_rate * 2):
+		var time := float(index) / sample_rate
+		var amplitude := 0.01
+		if time >= 0.62 and time < 0.84:
+			amplitude += 0.65 * exp(-(time - 0.62) * 35.0)
+		data.encode_s16(index * 2, roundi(sin(TAU * 80.0 * time) * amplitude * 32767.0))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = sample_rate

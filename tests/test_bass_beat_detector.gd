@@ -35,6 +35,8 @@ func _initialize() -> void:
 	if detector.update(db_to_linear(-26.0), 0.02, true) <= 0.0:
 		_fail("Повышенная чувствительность должна замечать более слабый удар")
 		return
+	if not _check_first_hit():
+		return
 	for profile in [{"name": "обычный", "period": 0.5, "floor": -36.0, "peak": -18.0}, {"name": "плотный", "period": 0.2, "floor": -26.0, "peak": -16.0}]:
 		var reference_hits: Array[float] = []
 		for fps in [30, 60, 144]:
@@ -67,6 +69,37 @@ func _initialize() -> void:
 func _fail(message: String) -> void:
 	push_error(message)
 	quit(1)
+
+
+func _check_first_hit() -> bool:
+	for fps in [30, 60, 144]:
+		var delta: float = 1.0 / fps
+		var detector = Detector.new()
+		# После сброса FFT сначала нет данных, затем слышен тихий фон.
+		for frame in range(fps / 4):
+			if detector.update(0.0, delta, true) != 0.0:
+				_fail("Пустой FFT после перемотки не должен создавать удар")
+				return false
+		for frame in range(maxi(1, roundi(0.08 * fps))):
+			if detector.update(db_to_linear(-53.0), delta, true) != 0.0:
+				_fail("Слабый фон не должен создавать удар")
+				return false
+		if detector.update(db_to_linear(-21.5), delta, true) < 0.4:
+			_fail("Первый удар после слабого фона пропущен при %d FPS" % fps)
+			return false
+		if detector.update(db_to_linear(-19.0), delta, true) != 0.0:
+			_fail("Продолжение первого удара не должно создавать второй импульс")
+			return false
+		# Тишина и шум ниже порога не должны становиться искусственным фоном.
+		detector.reset()
+		for frame in range(fps):
+			detector.update(db_to_linear(-80.0), delta, true)
+		for frame in range(fps):
+			if detector.update(db_to_linear(-20.0), delta, true) != 0.0:
+				_fail("Ровный бас после пустого анализа не должен считаться ударом")
+				return false
+		print("FIRST HIT %d FPS: слабый фон, первый удар и защита от ложных импульсов" % fps)
+	return true
 
 
 func _simulate_profile(fps: int, period: float, floor_db: float, peak_db: float) -> Array[float]:

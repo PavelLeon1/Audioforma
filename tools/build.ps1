@@ -46,7 +46,7 @@ try {
     if (-not (Select-String -LiteralPath $exportLog -Pattern 'res://shaders/reactive_common.gdshaderinc' -Quiet)) {
         throw 'Общие формулы цвета и деформации отсутствуют в сборке.'
     }
-    if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|bassboosted\.mp4|AGENT.md' -Quiet) {
+    if (Select-String -LiteralPath $exportLog -Pattern 'res://tests/|res://tools/|res://[123]\.png|bassboosted\.mp4|MC ORSEN - WARNING|AGENT.md' -Quiet) {
         throw 'Сборка содержит файлы разработки.'
     }
     if (-not (Test-Path -LiteralPath $output -PathType Leaf) -or (Get-Item -LiteralPath $output).Length -lt 100000000) {

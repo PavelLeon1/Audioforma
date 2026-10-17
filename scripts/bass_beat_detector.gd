@@ -1,6 +1,7 @@
 extends RefCounted
 
 const MIN_DB := -45.0
+const BACKGROUND_FLOOR_DB := -66.0
 const ONSET_DB := 2.6
 const RISE_DB := 1.2
 const RISE_WINDOW_SECONDS := 0.08
@@ -37,7 +38,8 @@ func update(magnitude: float, delta: float, active: bool) -> float:
 
 	var current_db := linear_to_db(maxf(magnitude, 0.000001))
 	if not _initialized:
-		if current_db < MIN_DB:
+		# Слабый реальный сигнал задаёт фон до первого удара; пустой FFT пропускается.
+		if current_db < BACKGROUND_FLOOR_DB:
 			return 0.0
 		_initialized = true
 		_baseline_db = current_db
